@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mundo Celular - Tienda</title>
+    <link rel="stylesheet" th:href="@{/estilos.css}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-logo">MUNDO CELULAR</div>
+        <div class="nav-links">
+            <a th:if="${cliente == null}" th:href="@{/}">Inicio</a>
+
+            <a th:if="${cliente != null}" th:href="@{/cliente/dashboard}" >Mi Panel</a>
+
+            <a th:href="@{/productos}" class="active">Productos</a>
+
+            <a th:if="${cliente == null}" th:href="@{/servicio-tecnico}">Servicio Técnico</a>
+
+            <button class="btn-nav" onclick="abrirModal()">Mi Info</button>
+
+            <a th:if="${cliente == null}" th:href="@{/login}" class="btn-login">Iniciar Sesión</a>
+
+            <a th:if="${cliente != null}" th:href="@{/logout}" class="btn-login"
+                style="background: var(--color-rojo);">Cerrar Sesión</a>
+        </div>
+    </nav>
+
+    <main class="contenedor-principal">
+
+        <header class="tienda-header">
+            <h1>Catálogo de Productos</h1>
+            <p>Encuentra los mejores estuches y accesorios para tu dispositivo.</p>
+
+            <div class="filtros">
+                <span class="filtro-etiqueta">Categorías:</span>
+                <a th:href="@{/productos}" class="btn-filtro">Todos</a>
+                <a th:href="@{/productos?categoria=ACCESORIO}" class="btn-filtro">Accesorios</a>
+                <a th:href="@{/productos?categoria=REPUESTO}" class="btn-filtro">Repuestos</a>
+            </div>
+        </header>
+
+        <div class="productos-lista-horizontal">
+
+            <div class="card-horizontal" th:each="producto : ${productos}">
+
+                <div class="card-img-wrapper">
+                    <img th:src="${producto.urlImagen != null && !producto.urlImagen.empty} ? ${producto.urlImagen} : 'https://via.placeholder.com/150?text=Muncel'"
+                        alt="Miniatura" class="miniatura-producto"
+                        th:onclick="abrirModalImagen([[${producto.urlImagen}]], [[${producto.nombreProducto}]])">
+                </div>
+
+                <div class="card-info-main">
+                    <div class="card-horizontal-tag" th:text="${producto.subcategoria}">SUBCATEGORÍA</div>
+                    <h3 th:text="${producto.nombreProducto}">Nombre del Producto</h3>
+                    <p class="descripcion" th:text="${producto.detalleProducto}">Detalles específicos del producto o
+                        compatibilidad.</p>
+                    <p class="stock-info" th:text="'Stock disponible: ' + ${producto.stock}">Stock: 0</p>
+                </div>
+
+                <div class="card-action-side">
+                    <p class="precio" th:text="'$' + ${producto.precioVenta}">$0.00</p>
+
+                    <form action="/agregar" method="post">
+                        <input type="hidden" name="id" th:value="${producto.id}">
+                        <input type="hidden" name="nombre" th:value="${producto.nombreProducto}">
+                        <input type="hidden" name="precio" th:value="${producto.precioVenta}">
+                        <button type="submit" class="btn-agregar-lista">AGREGAR</button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
+        <div id="modalImagen" class="modal" onclick="cerrarModalImagen()">
+            <div class="modal-content" style="max-width: 500px; text-align: center;" onclick="event.stopPropagation();">
+                <span class="close-modal" onclick="cerrarModalImagen()">&times;</span>
+                <h2 id="modalTituloImagen" style="margin-bottom: 15px;">Producto</h2>
+                <hr>
+                <div class="modal-body">
+                    <img id="imgModalTarget" src="" alt="Imagen del producto"
+                        style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 4px; border: 1px solid #333;">
+                </div>
+                <button class="btn-cerrar" onclick="cerrarModalImagen()">Cerrar Vista</button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        function abrirModalImagen(url, titulo) {
+            let imagenFinal = (url && url.trim() !== '') ? url : 'https://via.placeholder.com/400x400?text=Sin+Imagen';
+            document.getElementById("imgModalTarget").src = imagenFinal;
+            document.getElementById("modalTituloImagen").innerText = titulo;
+            document.getElementById("modalImagen").style.display = "flex";
+        }
+
+        function cerrarModalImagen() {
+            document.getElementById("modalImagen").style.display = "none";
+        }
+    </script>
+
+    <div id="modalInfo" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="cerrarModal()">&times;</span>
+            <h2>Información Personal</h2>
+            <hr>
+            <div class="modal-body">
+                <p><strong>Desarrollador:</strong> David Chavez</p>
+                <p><strong>Institución:</strong> ITQ</p>
+                <p><strong>Proyecto:</strong> Sistema de Gestión Muncel v1.0</p>
+                <p><strong>Estado del Sistema:</strong> Conectado a MySQL</p>
+            </div>
+            <button class="btn-cerrar" onclick="cerrarModal()">Entendido</button>
+        </div>
+    </div>
+
+    <script>
+        function abrirModal() { document.getElementById("modalInfo").style.display = "flex"; }
+        function cerrarModal() { document.getElementById("modalInfo").style.display = "none"; }
+    </script>
+
+    <footer class="muncel-footer">
+        <div class="footer-contenido">
+            <div class="footer-seccion">
+                <h3>MUNDO CELULAR</h3>
+                <p>Le Da Vida a tu Celular</p>
+            </div>
+            <div class="footer-seccion">
+                <h3>Servicios</h3>
+                <ul>
+                    <li><a th:href="@{/}">Tienda Virtual</a></li>
+                    <li><a th:href="@{/servicio-tecnico}">Servicio Técnico</a></li>
+                    <li><a th:href="@{/productos}">Productos</a></li>
+                </ul>
+            </div>
+            <div class="footer-seccion">
+                <h3>Contacto</h3>
+                <p>📍 Av. Central y Calle 4</p>
+                <p>📞 099 888 7776</p>
+                <p>✉️ soporte@muncel.com</p>
+            </div>
+        </div>
+        <div class="footer-derechos">
+            <p>&copy; 2026 Mundo Celular - Todos los derechos reservados.</p>
+        </div>
+    </footer>
+</body>
+
+</html>

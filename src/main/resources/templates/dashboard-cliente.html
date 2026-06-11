@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Muncel - Mi Panel</title>
+    <link rel="stylesheet" th:href="@{/estilos.css}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-logo">MUNDO CELULAR</div>
+        <div class="nav-links">
+            <a th:href="@{/}" class="active">Mi Panel</a>
+            <a th:href="@{/productos}">Productos</a>
+
+            <button class="btn-nav" onclick="abrirModal()">Mi Info</button>
+
+            <a th:href="@{/logout}" class="btn-login"
+                style="background: var(--color-rojo); border:none; cursor:pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+                Cerrar Sesión
+            </a>
+        </div>
+    </nav>
+
+    <div class="contenedor-principal">
+
+        <div class="bienvenida-cliente">
+            <h1>Bienvenido de vuelta, <span th:text="${cliente.nombreCompleto}">Juan Pérez</span></h1>
+            <p>Desde aquí puedes monitorear tus dispositivos en servicio técnico y tu historial de compras.</p>
+        </div>
+
+        <section class="seccion-dashboard">
+            <div class="seccion-header-dash">
+                <h2>🔧 Mis Equipos en Servicio Técnico</h2>
+            </div>
+
+            <div th:if="${#lists.isEmpty(ordenes)}" class="tarjeta-vacia">
+                <p>Actualmente no tienes ningún dispositivo en reparación.</p>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(ordenes)}" class="tabla-responsiva">
+                <table class="tabla-muncel">
+                    <thead>
+                        <tr>
+                            <th>N° Orden</th>
+                            <th>Dispositivo</th>
+                            <th>Falla Reportada</th>
+                            <th>Fecha Ingreso</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="orden : ${ordenes}">
+                            <td th:text="${orden.idOrden}" class="txt-rojo">1</td>
+                            <td th:text="${orden.dispositivo.marca + ' ' + orden.dispositivo.modelo}">Pocophone F1</td>
+                            <td th:text="${orden.fallaReported}">No enciende / Corto en placa</td>
+                            <td th:text="${#temporals.format(orden.fechaIngreso, 'dd/MM/yyyy')}">10/06/2026</td>
+                            <td>
+                                <span th:text="${orden.estado}"
+                                    th:classappend="${orden.estado.name() == 'RECIBIDO' ? 'badge-proceso' : 
+                                                       orden.estado.name() == 'REPARADO' ? 'badge-exito' : 'badge-entregado'}" class="badge">
+                                    RECIBIDO
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="seccion-dashboard" style="margin-top: 40px;">
+            <div class="seccion-header-dash">
+                <h2>🛍️ Historial de Compras</h2>
+            </div>
+
+            <div th:if="${#lists.isEmpty(compras)}" class="tarjeta-vacia">
+                <p>Aún no has realizado compras en nuestra tienda.</p>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(compras)}" class="tabla-responsiva">
+                <table class="tabla-muncel">
+                    <thead>
+                        <tr>
+                            <th>N° Factura</th>
+                            <th>Fecha de Emisión</th>
+                            <th>Total Pagado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="compra : ${compras}">
+                            <td th:text="${compra.numeroFactura}">001-001-000043</td>
+                            <td th:text="${#temporals.format(compra.fechaEmision, 'dd/MM/yyyy HH:mm')}">08/06/2026 14:30
+                            </td>
+                            <td th:text="${'$' + compra.totalPagar}" class="txt-verde">$15.50</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+
+    <div id="modalInfo" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="cerrarModal()">&times;</span>
+            <h2>Información Personal</h2>
+            <hr>
+            <div class="modal-body">
+                <p><strong>Desarrollador:</strong> David Chavez</p>
+                <p><strong>Institución:</strong> ITQ</p>
+                <p><strong>Proyecto:</strong> Sistema de Gestión Muncel v1.0</p>
+                <p><strong>Estado del Sistema:</strong> Conectado a MySQL</p>
+            </div>
+            <button class="btn-cerrar" onclick="cerrarModal()">Entendido</button>
+        </div>
+    </div>
+
+    <script>
+        function abrirModal() { document.getElementById("modalInfo").style.display = "flex"; }
+        function cerrarModal() { document.getElementById("modalInfo").style.display = "none"; }
+    </script>
+
+    <footer class="muncel-footer">
+        <div class="footer-contenido">
+            <div class="footer-seccion">
+                <h3>MUNDO CELULAR</h3>
+                <p>Le Da Vida a tu Celular</p>
+            </div>
+            <div class="footer-seccion">
+                <h3>Servicios</h3>
+                <ul>
+                    <li><a th:href="@{/}">Tienda Virtual</a></li>
+                    <li><a th:href="@{/servicio-tecnico}">Servicio Técnico</a></li>
+                    <li><a th:href="@{/productos}">Productos</a></li>
+                </ul>
+            </div>
+            <div class="footer-seccion">
+                <h3>Contacto</h3>
+                <p>📍 Av. Central y Calle 4</p>
+                <p>📞 099 888 7776</p>
+                <p>✉️ soporte@muncel.com</p>
+            </div>
+        </div>
+        <div class="footer-derechos">
+            <p>&copy; 2026 Mundo Celular - Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>

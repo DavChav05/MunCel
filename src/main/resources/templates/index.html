@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mundo Celular - Inicio</title>
+    <link rel="stylesheet" href="/estilos.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-logo">MUNDO CELULAR</div>
+        <div class="nav-links">
+            <a href="/" class="active">Inicio</a>
+            <a href="/productos">Productos</a>
+            <a href="/servicio-tecnico">Servicio Técnico</a>
+            <button class="btn-nav" onclick="abrirModal()">Mi Info</button>
+            <a href="/login" class="btn-login">Iniciar Sesión</a>
+        </div>
+    </nav>
+
+    <main class="contenedor-principal">
+        <header class="tienda-header">
+            <h1>Mundo Celular</h1>
+            <p>Le Da Vida a tu Celular</p>
+        </header>
+
+        <div style="text-align: center; margin-top: 50px;">
+            <h2>¡Bienvenidos a nuestra tienda en línea!</h2>
+            <p style="color: #b0b0b0; margin-top: 15px;">Explora nuestro menú superior para revisar los estuches
+                disponibles o solicitar soporte técnico.</p>
+            <br>
+            <a href="/productos" class="btn-login" style="text-decoration: none; display: inline-block;">VER CATÁLOGO
+                AHORA</a>
+        </div>
+    </main>
+
+    <div id="modalInfo" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="cerrarModal()">&times;</span>
+            <h2>Información Personal</h2>
+            <hr>
+            <div class="modal-body">
+                <p><strong>Desarrollador:</strong> David Chavez</p>
+                <p><strong>Institución:</strong> ITQ</p>
+                <p><strong>Proyecto:</strong> Sistema de Gestión Muncel v1.0</p>
+                <p><strong>Estado del Sistema:</strong> Conectado a MySQL</p>
+            </div>
+            <button class="btn-cerrar" onclick="cerrarModal()">Entendido</button>
+        </div>
+    </div>
+
+    <script>
+        function abrirModal() { document.getElementById("modalInfo").style.display = "flex"; }
+        function cerrarModal() { document.getElementById("modalInfo").style.display = "none"; }
+    </script>
+
+    <footer class="muncel-footer">
+        <div class="footer-contenido">
+            <div class="footer-seccion">
+                <h3>MUNDO CELULAR</h3>
+                <p>Le Da Vida a tu Celular</p>
+            </div>
+            <div class="footer-seccion">
+                <h3>Servicios</h3>
+                <ul>
+                    <li><a href="#">Tienda Virtual</a></li>
+                    <li><a href="#">Servicio Técnico</a></li>
+                    <li><a href="./productos.html">Productos</a></li>
+                </ul>
+            </div>
+            <div class="footer-seccion">
+                <h3>Contacto</h3>
+                <p>📍 Av. Central y Calle 4</p>
+                <p>📞 099 888 7776</p>
+                <p>✉️ soporte@muncel.com</p>
+            </div>
+        </div>
+        <div class="footer-derechos">
+            <p>&copy; 2026 Mundo Celular - Todos los derechos reservados.</p>
+        </div>
+    </footer>
+</body>
+
+</html>

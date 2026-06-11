@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mundo Celular - Consulta de Servicio Técnico</title>
+    <link rel="stylesheet" th:href="@{/estilos.css}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-logo">MUNDO CELULAR</div>
+        <div class="nav-links">
+            <a th:href="@{/}">Inicio</a>
+            <a th:href="@{/productos}">Productos</a>
+
+            <a th:if="${cliente == null}" th:href="@{/servicio-tecnico}" class="active">Servicio Técnico</a>
+
+            <button class="btn-nav" onclick="abrirModal()">Mi Info</button>
+
+            <a th:if="${cliente == null}" th:href="@{/login}" class="btn-login">Iniciar Sesión</a>
+
+            <a th:if="${cliente != null}" th:href="@{/cliente/dashboard}" class="active">Mi Panel</a>
+            <a th:if="${cliente != null}" th:href="@{/logout}" class="btn-login"
+                style="background: var(--color-rojo);">Cerrar Sesión</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Seguimiento Técnico Muncel</h1>
+
+        <div class="search-box">
+            <p>Ingresa el número de orden asignado a tu dispositivo para conocer el estado de tu reparación en tiempo
+                real.</p>
+            <form th:action="@{/servicio-tecnico/buscar}" method="GET">
+                <div class="form-group">
+                    <input type="text" name="numeroOrden" class="input-orden" placeholder="Ej: 1"
+                        th:value="${numeroOrden}" required>
+                    <button type="submit" class="btn-buscar">Buscar Orden</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="alert-error" th:if="${error}">
+            <p th:text="${error}"></p>
+        </div>
+
+        <div class="resultado-card" th:if="${servicio}">
+            <h2>Detalles de la Orden #<span th:text="${servicio.idOrden}" class="orden-texto"></span></h2>
+
+            <div class="info-grid">
+
+                <div class="info-item">
+                    <label>Dispositivo</label>
+                    <span th:text="${servicio.dispositivo.nombreProducto}"></span>
+                </div>
+
+                <div class="info-item status-active">
+                    <label>Estado Actual</label>
+                    <span th:if="${servicio.estado.name() == 'INGRESADO'}" class="badge badge-recibido">Ingresado</span>
+                    <span th:if="${servicio.estado.name() == 'REPARANDO'}" class="badge badge-reparacion">En
+                        Taller</span>
+                    <span th:if="${servicio.estado.name() == 'TERMINADO'}" class="badge badge-terminado">Listo para
+                        Entrega</span>
+                    <span th:if="${servicio.estado.name() == 'ENTREGADO'}"
+                        class="badge badge-entregado">Entregado</span>
+                </div>
+
+                <div class="info-item">
+                    <label>Falla Reportada</label>
+                    <span th:text="${servicio.fallaReportada}"></span>
+                </div>
+
+                <div class="info-item">
+                    <label>Observaciones Físicas</label>
+                    <span
+                        th:text="${servicio.observacionesFisicas != null && !servicio.observacionesFisicas.empty} ? ${servicio.observacionesFisicas} : 'Ninguna'"></span>
+                </div>
+
+                <div class="info-item">
+                    <label>Presupuesto Estimado</label>
+                    <span style="color: #00ff88; font-weight: bold;"
+                        th:text="'$' + ${servicio.presupuestoEstimado}">$0.00</span>
+                </div>
+
+                <div class="info-item">
+                    <label>Técnico Asignado</label>
+                    <span th:text="${servicio.empleado.id}"></span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="modalInfo" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="cerrarModal()">&times;</span>
+            <h2>Información Personal</h2>
+            <hr>
+            <div class="modal-body">
+                <p><strong>Desarrollador:</strong> David Chavez</p>
+                <p><strong>Institución:</strong> ITQ</p>
+                <p><strong>Proyecto:</strong> Sistema de Gestión Muncel v1.0</p>
+                <p><strong>Estado del Sistema:</strong> Conectado a MySQL</p>
+            </div>
+            <button class="btn-cerrar" onclick="cerrarModal()">Entendido</button>
+        </div>
+    </div>
+
+    <script>
+        function abrirModal() { document.getElementById("modalInfo").style.display = "flex"; }
+        function cerrarModal() { document.getElementById("modalInfo").style.display = "none"; }
+    </script>
+
+    <footer class="muncel-footer">
+        <div class="footer-contenido">
+            <div class="footer-seccion">
+                <h3>MUNDO CELULAR</h3>
+                <p>Le Da Vida a tu Celular</p>
+            </div>
+            <div class="footer-seccion">
+                <h3>Servicios</h3>
+                <ul>
+                    <li><a th:href="@{/}">Tienda Virtual</a></li>
+                    <li><a th:href="@{/servicio-tecnico}">Servicio Técnico</a></li>
+                    <li><a th:href="@{/productos}">Productos</a></li>
+                </ul>
+            </div>
+            <div class="footer-seccion">
+                <h3>Contacto</h3>
+                <p>📍 Av. Central y Calle 4</p>
+                <p>📞 099 888 7776</p>
+                <p>✉️ soporte@muncel.com</p>
+            </div>
+        </div>
+        <div class="footer-derechos">
+            <p>&copy; 2026 Mundo Celular - Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>
