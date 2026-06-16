@@ -14,53 +14,65 @@ import java.util.Optional;
 @RequestMapping("/servicio-tecnico")
 public class OrdenServicioController {
 
-    @GetMapping("/login") 
-    public String mostrarLogin() {
-        return "login"; 
-    }
-
     @Autowired
     private OrdenServicioRepository ordenServicioRepository;
 
-    // 1. Carga la página por primera vez (Buscador vacío)
-    @GetMapping
-    public String mostrarPaginaConsulta() {
-        return "servicio-tecnico"; // Renderiza tu plantilla servicio-tecnico.html
+    @GetMapping("/login")
+    public String mostrarLogin() {
+        return "login";
     }
 
-    // 2. Procesa la búsqueda cuando el cliente o técnico digita el ID de la orden
+    // Carga la página pública por primera vez (buscador vacío)
+    @GetMapping
+    public String mostrarPaginaConsulta() {
+        return "servicio-tecnico";
+    }
+
+    // Procesa la búsqueda pública por el número de orden de 4 dígitos
     @GetMapping("/buscar")
     public String buscarOrden(@RequestParam("numeroOrden") String numeroOrdenStr, Model model) {
-        
-        // Guardamos el texto enviado para que no se borre de la barra de búsqueda en la interfaz
+
         model.addAttribute("numeroOrden", numeroOrdenStr);
-        
-        // Validación de seguridad: Evita que el sistema falle si mandan el buscador vacío o con letras
+
         if (numeroOrdenStr == null || numeroOrdenStr.trim().isEmpty()) {
-            model.addAttribute("error", "Por favor, ingrese un número de orden válido.");
+            model.addAttribute("error", "Por favor, ingrese un número de orden.");
             return "servicio-tecnico";
         }
 
+        String numeroLimpio = numeroOrdenStr.trim();
+
         try {
-            // Convertimos el String de la pantalla a Integer porque 'idOrden' en tu BDD es un INT
-            Integer idOrden = Integer.parseInt(numeroOrdenStr.trim());
-            
-            // Buscamos en la base de datos usando el repositorio corregido (devuelve un Optional)
-            Optional<OrdenServicio> ordenOpt = ordenServicioRepository.findById(idOrden);
-            
-            if (ordenOpt.isPresent()) {
-                // Si la orden existe, la mandamos completa a la vista bajo la variable 'servicio'
-                model.addAttribute("servicio", ordenOpt.get());
-            } else {
-                // Si el número no existe en los registros
-                model.addAttribute("error", "No se encontró ninguna orden de servicio con el número: " + idOrden);
+            // 1. Aquí transformamos el texto a número entero
+            Integer numeroEntero = Integer.parseInt(numeroLimpio);
+
+            if (numeroLimpio.length() != 4) {
+                model.addAttribute("error", "El número de orden debe tener exactamente 4 dígitos (Ej: 1000).");
+                return "servicio-tecnico";
             }
-            
+
+            // 2. CORREGIDO: Pasamos 'numeroEntero' (el Integer) en lugar de 'numeroLimpio'
+            // (el String)
+            Optional<OrdenServicio> ordenOpt = ordenServicioRepository.findByNumeroOrden(numeroEntero);
+
+            if (ordenOpt.isPresent()) {
+                OrdenServicio orden = ordenOpt.get();
+                model.addAttribute("servicio", orden);
+
+                if (orden.getDispositivo() != null) {
+                    model.addAttribute("dispositivoNombre",
+                            orden.getDispositivo().getMarca() + " " + orden.getDispositivo().getModelo());
+                } else {
+                    model.addAttribute("dispositivoNombre", "Dispositivo en Taller");
+                }
+
+            } else {
+                model.addAttribute("error", "No se encontró ninguna orden de servicio con el número: " + numeroLimpio);
+            }
+
         } catch (NumberFormatException e) {
-            // Este bloque atrapa el error si el usuario escribe letras en lugar de números (Ej: "abc")
-            model.addAttribute("error", "El formato del número de orden es incorrecto. Ingrese solo números.");
+            model.addAttribute("error", "El formato es incorrecto. Ingrese solo números.");
         }
-        
+
         return "servicio-tecnico";
     }
 }

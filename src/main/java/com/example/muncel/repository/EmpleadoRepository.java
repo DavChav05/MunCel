@@ -5,13 +5,16 @@ import org.springframework.stereotype.Repository;
 
 import com.example.muncel.model.Empleado;
 import java.util.List;
+import java.util.Optional;
 
 
 @Repository
 
-public interface EmpleadoRepository extends JpaRepository<Empleado, Long>{
+public interface EmpleadoRepository extends JpaRepository<Empleado, Integer>{
 
-    List<Empleado> findByUsername(String username);
+    Optional<Empleado> findByUsername(String username);
 
     List<Empleado> findByNombreCompleto(String nombreCompleto);
+
+    Optional<Empleado> findByIdEmpleado(Integer idEmpleado);
 }

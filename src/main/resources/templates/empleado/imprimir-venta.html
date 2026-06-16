@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Ticket de Venta</title>
+    <style>
+        /* MEDIDAS ESTÁNDAR PARA IMPRESORA TÉRMICA 80mm */
+        @page {
+            margin: 0;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            width: 80mm;
+            /* Ancho del ticket */
+            margin: 0 auto;
+            padding: 5mm;
+            font-size: 12px;
+            color: #000;
+        }
+
+        .centrado {
+            text-align: center;
+        }
+
+        .negrita {
+            font-weight: bold;
+        }
+
+        .separador {
+            border-top: 1px dashed #000;
+            margin: 5px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 2px 0;
+            font-size: 11px;
+        }
+
+        th {
+            border-bottom: 1px solid #000;
+        }
+
+        .total-row td {
+            font-weight: bold;
+            font-size: 13px;
+            border-top: 1px dashed #000;
+            padding-top: 5px;
+        }
+
+        .derecha {
+            text-align: right;
+        }
+
+        /* Ocultar botón al imprimir */
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="no-print" style="text-align: center; margin-bottom: 10px;">
+        <button onclick="window.print()"
+            style="padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️
+            Imprimir Ticket</button>
+        <a th:href="@{/empleado/ventas}"
+            style="padding: 10px; margin-left: 10px; text-decoration: none; background: #6c757d; color: white; border-radius: 5px;">Volver</a>
+    </div>
+
+    <div class="centrado">
+        <h2 style="margin: 0; font-size: 16px;">MUNDO CELULAR</h2>
+        <p style="margin: 2px 0;">Le da vida a tu celular</p>
+        <p style="margin: 2px 0;">Av. Principal - Sector Sur</p>
+    </div>
+
+    <div class="separador"></div>
+
+    <div>
+        <p style="margin: 2px 0;"><strong>TICKET NO:</strong> <span th:text="${nota.idNotaVenta}"></span></p>
+        <p style="margin: 2px 0;"><strong>FECHA:</strong> <span
+                th:text="${#temporals.format(nota.fechaEmision, 'dd/MM/yyyy HH:mm')}"></span></p>
+        <p style="margin: 2px 0;"><strong>CLIENTE:</strong> <span th:text="${nota.cliente.nombreCompleto}"></span></p>
+        <p style="margin: 2px 0;"><strong>C.I/RUC:</strong> <span th:text="${nota.cliente.cedulaRuc}"></span></p>
+    </div>
+
+    <div class="separador"></div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 15%;">CANT</th>
+                <th style="width: 55%;">DESCRIPCIÓN</th>
+                <th style="width: 30%;" class="derecha">SUBT</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="detalle : ${nota.detalles}">
+                <td th:text="${detalle.cantidad}"></td>
+                <td th:text="${detalle.producto.nombreProducto}"></td>
+                <td class="derecha">$<span th:text="${detalle.subtotalLinea}"></span></td>
+            </tr>
+            <tr class="total-row">
+                <td colspan="2">TOTAL A PAGAR:</td>
+                <td class="derecha">$<span th:text="${nota.totalPagar}"></span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="separador"></div>
+
+    <div class="centrado">
+        <p style="margin: 5px 0;">¡Gracias por su compra!</p>
+        <p style="margin: 2px 0; font-size: 10px;">Los accesorios tienen 30 días de garantía por defectos de fábrica.
+        </p>
+    </div>
+
+</body>
+
+</html>

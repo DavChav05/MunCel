@@ -23,7 +23,7 @@
                     <p>Regístrate para comprar accesorios y revisar tus órdenes técnicas</p>
                 </div>
 
-                <div th:if="${error}" class="alert-error" th:text="${error}"></div>
+                <div th:if="${error}" class="alert-error" style="color: red; padding: 10px;" th:text="${error}"></div>
 
                 <form th:action="@{/registro}" method="POST">
 
@@ -31,7 +31,9 @@
 
                     <div class="grupo-campo">
                         <label for="cedula">Cédula o RUC</label>
-                        <input type="text" id="cedula" name="cedulaRuc" placeholder="Ej: 1712345678" required>
+                        <input type="text" id="cedula" name="cedulaRuc" placeholder="Ej: 1712345678" required
+                            onblur="buscarClienteExistente()">
+                        <small id="mensajeCedula" style="color: green; font-size: 0.8em;"></small>
                     </div>
 
                     <div class="grupo-campo">
@@ -76,30 +78,46 @@
                         Finalizar Registro
                     </button>
                 </form>
-
-                <div class="acceso-footer">
-                    <p>¿Ya tienes una cuenta?</p>
-                    <a th:href="@{/login}"
-                        style="color: var(--color-rojo); font-weight: bold; text-decoration: none;">Inicia sesión
-                        aquí</a>
-                </div>
             </div>
         </div>
-
     </div>
 
-    <footer class="muncel-footer">
-        <div class="footer-contenido">
-            <div class="footer-seccion">
-                <h3>Mundo Celular</h3>
-                <p>Le Da Vida a tu Celular</p>
-            </div>
-        </div>
-        <div class="footer-derechos">
-            <p>© 2026 Mundo Celular - Todos los derechos reservados.</p>
-        </div>
-    </footer>
+    <script>
+        function buscarClienteExistente() {
+            const cedula = document.getElementById('cedula').value;
+            const mensaje = document.getElementById('mensajeCedula');
+            const inputNombre = document.getElementById('nombre');
+            const inputTelefono = document.getElementById('telefono');
 
+            if (cedula.length >= 10) {
+                fetch(`/api/clientes/buscar?cedula=${cedula}`)
+                    .then(response => {
+                        if (response.ok) return response.json();
+                        throw new Error("No encontrado");
+                    })
+                    .then(data => {
+                        // Si existe, llenamos y bloqueamos (readonly) para proteger la data
+                        inputNombre.value = data.nombreCompleto || data.nombre || "";
+                        inputNombre.readOnly = true;
+                        inputNombre.style.backgroundColor = "#e9ecef";
+
+                        inputTelefono.value = data.telefono || "";
+                        inputTelefono.readOnly = true;
+                        inputTelefono.style.backgroundColor = "#e9ecef";
+
+                        mensaje.textContent = "¡Te encontramos! Completa los datos restantes.";
+                    })
+                    .catch(error => {
+                        // Si es nuevo, dejamos que escriba libremente
+                        inputNombre.readOnly = false;
+                        inputNombre.style.backgroundColor = "white";
+                        inputTelefono.readOnly = false;
+                        inputTelefono.style.backgroundColor = "white";
+                        mensaje.textContent = "";
+                    });
+            }
+        }
+    </script>
 </body>
 
 </html>

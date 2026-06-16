@@ -25,7 +25,7 @@ public class DetalleVenta {
     // El CascadeType.REMOVE o el ajuste en la base de datos asegura el ON DELETE
     // CASCADE
     @ManyToOne
-    @JoinColumn(name = "id_nota_venta_fk", referencedColumnName = "idNotaVenta",nullable = false)
+    @JoinColumn(name = "id_nota_venta_fk", referencedColumnName = "idNotaVenta",nullable = true)
     private NotaVenta notaVenta;
 
     // RELACIÓN: Muchos detalles pueden registrar el mismo Producto (en diferentes

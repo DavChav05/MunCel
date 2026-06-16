@@ -10,9 +10,11 @@ import java.util.List;
 
 @Repository
 
-public interface NotaVentaRepository extends JpaRepository <NotaVenta, Long> {
+public interface NotaVentaRepository extends JpaRepository <NotaVenta, Integer> {
 
-    List<NotaVenta> findByNumeroFactura(Long numeroFactura);
+    List<NotaVenta> findByNumeroFactura(Integer numeroFactura);
 
     List<NotaVenta> findByCliente(Cliente cliente);
+
+    NotaVenta findTopByOrderByNumeroFacturaDesc();
 }

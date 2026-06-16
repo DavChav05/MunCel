@@ -17,6 +17,9 @@ public class Producto {
     @Column(name = "nombre_producto", length = 100, nullable = false)
     private String nombreProducto;
 
+    @Column(name = "marca_producto", length = 100, nullable = false)
+    private String marcaProducto;
+
     @Column(name = "precio_costo", nullable = false, precision = 10, scale = 2)
     private BigDecimal precioCosto;
 
@@ -53,12 +56,14 @@ public class Producto {
     public Producto() {
     }
 
-    public Producto(Integer idProducto, String codigoProducto, String nombreProducto, BigDecimal precioCosto,
-            BigDecimal precioVenta, Integer stock, CategoriaProducto categoria, SubcategoriaProducto subcategoria,
-            String detalleProducto, Boolean visibleEnCatalogo, String urlImagen, Proveedor proveedor) {
+    public Producto(Integer idProducto, String codigoProducto, String nombreProducto, String marcaProducto,
+            BigDecimal precioCosto, BigDecimal precioVenta, Integer stock, CategoriaProducto categoria,
+            SubcategoriaProducto subcategoria, String detalleProducto, Boolean visibleEnCatalogo, String urlImagen,
+            Proveedor proveedor) {
         this.idProducto = idProducto;
         this.codigoProducto = codigoProducto;
         this.nombreProducto = nombreProducto;
+        this.marcaProducto = marcaProducto;
         this.precioCosto = precioCosto;
         this.precioVenta = precioVenta;
         this.stock = stock;
@@ -92,6 +97,14 @@ public class Producto {
 
     public void setNombreProducto(String nombreProducto) {
         this.nombreProducto = nombreProducto;
+    }
+
+    public String getMarcaProducto() {
+        return marcaProducto;
+    }
+
+    public void setMarcaProducto(String marcaProducto) {
+        this.marcaProducto = marcaProducto;
     }
 
     public BigDecimal getPrecioCosto() {

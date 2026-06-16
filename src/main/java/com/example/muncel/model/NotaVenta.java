@@ -12,8 +12,8 @@ public class NotaVenta {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Equivale a AUTO_INCREMENT
     private Integer idNotaVenta;
 
-    @Column(name = "numero_factura", length = 20, nullable = false, unique = true) // VARCHAR(20) NOT NULL UNIQUE
-    private String numeroFactura;
+    @Column(name = "numero_factura", nullable = false, unique = true) 
+    private Integer numeroFactura;
 
     @Column(name = "fecha_emision", nullable = false) // DATETIME DEFAULT CURRENT_TIMESTAMP
     private LocalDateTime fechaEmision = LocalDateTime.now(); // Asigna la fecha y hora actual automáticamente
@@ -27,15 +27,17 @@ public class NotaVenta {
     @JoinColumn(name = "id_cliente_fk", referencedColumnName = "idCliente", nullable = false) // Llave foránea en MySQL
     private Cliente cliente;
 
-    // RELACIÓN DE AUDITORÍA: Muchas notas de venta pueden ser cobradas por un mismo Empleado
+    // RELACIÓN DE AUDITORÍA: Muchas notas de venta pueden ser cobradas por un mismo
+    // Empleado
     @ManyToOne
-    @JoinColumn(name = "id_empleado_fk", referencedColumnName = "idEmpleado", nullable = false) // Llave foránea en MySQL
+    @JoinColumn(name = "id_empleado_fk", referencedColumnName = "idEmpleado", nullable = false) // Llave foránea en
+                                                                                                // MySQL
     private Empleado empleado;
 
     public NotaVenta() {
     }
 
-    public NotaVenta(Integer idNotaVenta, String numeroFactura, LocalDateTime fechaEmision, BigDecimal totalPagar,
+    public NotaVenta(Integer idNotaVenta, Integer numeroFactura, LocalDateTime fechaEmision, BigDecimal totalPagar,
             Cliente cliente, Empleado empleado) {
         this.idNotaVenta = idNotaVenta;
         this.numeroFactura = numeroFactura;
@@ -53,11 +55,11 @@ public class NotaVenta {
         this.idNotaVenta = idNotaVenta;
     }
 
-    public String getNumeroFactura() {
+    public Integer getNumeroFactura() {
         return numeroFactura;
     }
 
-    public void setNumeroFactura(String numeroFactura) {
+    public void setNumeroFactura(Integer numeroFactura) {
         this.numeroFactura = numeroFactura;
     }
 

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Ventas - Muncel</title>
+    <link rel="stylesheet" th:href="@{/empleado.css}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-logo">MUNDO CELULAR</div>
+
+        <div class="nav-links">
+            <span style="color: var(--color-texto-gris); margin-right: 15px;">
+                👤 Hola, <span style="color: white; font-weight: bold;"
+                    th:text="${session.empleadoLogueado != null ? session.empleadoLogueado.nombreCompleto : 'Equipo'}"></span>
+            </span>
+
+            <a href="/empleado/ventas">Ventas</a>
+            <a href="/empleado/servicio-tecnico">Servicio Técnico</a>
+            <a href="/logout">Cerrar Sesión</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1>Venta en Proceso</h1>
+
+        <div class="seccion-busqueda">
+            <form th:action="@{/empleado/ventas}" method="GET">
+                <label for="buscarCodigo">1. Digite el código:</label>
+                <div class="input-group">
+                    <input type="text" id="buscarCodigo" name="buscarCodigo" th:value="${param.buscarCodigo}"
+                        placeholder="Ej: PROD123" required>
+                    <button type="submit" class="btn-verificar">Verificar Producto</button>
+                </div>
+            </form>
+        </div>
+
+        <div th:if="${errorBusqueda}" class="alert alert-danger" style="color: var(--color-rojo); margin: 10px 0;">
+            <p th:text="${errorBusqueda}"></p>
+        </div>
+
+        <div th:if="${productoVerificado != null}" class="card-producto"
+            style="background: var(--color-card); padding: 15px; margin: 15px 0; border-radius: 8px; border: 1px solid #333;">
+            <h3 style="color: var(--color-texto-blanco);">📋 Información del Producto</h3>
+            <p><strong>Nombre:</strong> <span th:text="${productoVerificado.nombreProducto}"></span></p>
+            <p><strong>Subcategoría:</strong> <span
+                    th:text="${productoVerificado.subcategoria != null ? productoVerificado.subcategoria : 'Sin subcategoría'}"></span>
+            </p>
+            <p><strong>Precio unitario:</strong> $<span th:text="${productoVerificado.precioVenta}"></span></p>
+
+            <form th:action="@{/empleado/ventas/agregar}" method="POST"
+                style="margin-top: 15px; border: none; padding: 0; background: transparent;">
+                <input type="hidden" name="codigoProducto" th:value="${productoVerificado.codigoProducto}">
+
+                <label for="cantidad">2. Ingrese la cantidad a vender:</label>
+                <input type="number" id="cantidad" name="cantidad" value="1" min="1" required
+                    style="width: 80px; margin-right: 10px;">
+
+                <button type="submit" class="btn-agregar"
+                    style="background-color: var(--color-rojo); color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer;">
+                    Confirmar y Agregar al Carrito
+                </button>
+            </form>
+        </div>
+
+        <div class="header-carrito" th:if="${detalles != null && !detalles.isEmpty()}">
+            <h2>Detalle de la venta actual</h2>
+
+            <form th:action="@{/empleado/ventas/limpiar}" method="POST"
+                style="background: transparent; border: none; padding: 0; margin: 0;">
+                <button type="submit" class="btn-vaciar"
+                    onclick="return confirm('¿Seguro que deseas vaciar el carrito y cancelar esta venta?')">
+                    🗑️ Vaciar Carrito
+                </button>
+            </form>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Cantidad</th>
+                    <th>Producto</th>
+                    <th>Subcategoría</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody th:if="${detalles != null}">
+                <tr th:each="d : ${detalles}">
+                    <td th:text="${d.cantidad}">0</td>
+                    <td th:text="${d.producto != null ? d.producto.nombreProducto : 'Sin nombre'}">Nombre</td>
+                    <td
+                        th:text="${d.producto != null && d.producto.subcategoria != null ? d.producto.subcategoria : '-'}">
+                        Subcategoría</td>
+                    <td th:text="${d.subtotalLinea}">0.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p th:if="${detalles == null || detalles.isEmpty()}" class="mensaje-vacio">
+            El carrito está vacío.
+        </p>
+
+        <div th:if="${detalles != null && !detalles.isEmpty()}" class="card-cliente">
+
+            <h3>👤 Datos del Cliente</h3>
+            <p class="instruccion-cliente">Para Consumidor Final, ingrese 9999999999 y "Consumidor Final".</p>
+
+            <form th:action="@{/empleado/ventas/emitir}" method="POST" class="form-emision">
+
+                <div class="grupo-input-verificar">
+                    <label>Cédula / RUC:</label>
+                    <div class="fila-verificar">
+                        <input type="text" id="inputCedula" name="cedula" placeholder="Ej: 1712345678" required>
+                        <button type="button" class="btn-verificar" onclick="verificarCliente()">🔍 Verificar</button>
+                    </div>
+                    <small id="mensajeVerificacion" class="mensaje-estado"></small>
+                </div>
+
+                <div class="grupo-input">
+                    <label>Nombre / Razón Social:</label>
+                    <input type="text" id="inputNombre" name="nombreCliente" placeholder="Ej: Juan Pérez" required>
+                </div>
+
+                <div class="grupo-input">
+                    <label>Dirección (Sector):</label>
+                    <input type="text" id="inputDireccion" name="direccion" placeholder="Ej: Sur / Av. Principal">
+                </div>
+
+                <div class="grupo-input">
+                    <label>Teléfono (Opcional):</label>
+                    <input type="text" id="inputTelefono" name="telefono" placeholder="Ej: 0987654321">
+                </div>
+
+                <button type="submit" class="btn-emitir"
+                    style="background-color: var(--color-rojo); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    ✅ Guardar Venta e Imprimir
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Muncel System</p>
+    </footer>
+
+    <script>
+        function verificarCliente() {
+            const cedula = document.getElementById('inputCedula').value;
+            const mensaje = document.getElementById('mensajeVerificacion');
+            const inputNombre = document.getElementById('inputNombre');
+            const inputDireccion = document.getElementById('inputDireccion');
+            const inputTelefono = document.getElementById('inputTelefono');
+
+            if (!cedula) {
+                mensaje.textContent = "Ingrese una cédula primero.";
+                mensaje.className = "mensaje-estado error";
+                return;
+            }
+
+            if (cedula === "9999999999") {
+                inputNombre.value = "Consumidor Final";
+                inputDireccion.value = "";
+                inputTelefono.value = "";
+                mensaje.textContent = "Modo Consumidor Final activado.";
+                mensaje.className = "mensaje-estado info";
+                return;
+            }
+
+            mensaje.textContent = "Buscando...";
+            mensaje.className = "mensaje-estado";
+
+            fetch(`/api/clientes/buscar?cedula=${cedula}`)
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error("No encontrado");
+                    }
+                })
+                .then(data => {
+                    inputNombre.value = data.nombreCompleto || data.nombre || "";
+                    inputDireccion.value = data.direccion || "";
+                    inputTelefono.value = data.telefono || "";
+                    mensaje.textContent = "¡Cliente encontrado!";
+                    mensaje.className = "mensaje-estado exito";
+                })
+                .catch(error => {
+                    inputNombre.value = "";
+                    inputDireccion.value = "";
+                    inputTelefono.value = "";
+                    mensaje.textContent = "Cliente nuevo. Llene los datos manualmente.";
+                    mensaje.className = "mensaje-estado info";
+                    inputNombre.focus();
+                });
+        }
+    </script>
+</body>
+
+</html>

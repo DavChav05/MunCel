@@ -3,11 +3,18 @@ package com.example.muncel.control;
 import com.example.muncel.model.CategoriaProducto;
 import com.example.muncel.model.Cliente;
 import com.example.muncel.model.ClienteUsuario;
+import com.example.muncel.model.Empleado;
 import com.example.muncel.model.NotaVenta;
 import com.example.muncel.model.OrdenServicio;
+import com.example.muncel.model.SubcategoriaProducto;
 import com.example.muncel.repository.ProductoRepository;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+
 import com.example.muncel.repository.ClienteRepository;
 import com.example.muncel.repository.ClienteUsuarioRepository;
+import com.example.muncel.repository.EmpleadoRepository;
 import com.example.muncel.repository.NotaVentaRepository;
 import com.example.muncel.repository.OrdenServicioRepository;
 
@@ -17,7 +24,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
 
 import java.util.Optional;
 import java.util.List;
@@ -42,9 +48,12 @@ public class ProductoController {
     @Autowired
     private NotaVentaRepository notaVentaRepositorio; // Para traer su historial de compras
 
-    @GetMapping("/login") 
+    @Autowired
+    private EmpleadoRepository empleadoRepository; // Asegúrate de tener esto arriba
+
+    @GetMapping("/login")
     public String mostrarLogin() {
-        return "login"; 
+        return "login";
     }
 
     // ==========================================
@@ -67,81 +76,91 @@ public class ProductoController {
             @RequestParam("username") String username,
             @RequestParam("password") String password,
             Model model) {
-        
-        try {
-            // Validación 1: Verificar si la cédula ya existe en la tabla 'clientes'
-            // (Usando el método corregido findByCedulaRuc de tu repositorio)
-            Optional<Cliente> clienteExistente = clienteRepositorio.findByCedulaRuc(cedulaRuc);
-            if (clienteExistente.isPresent()) {
-                model.addAttribute("error", "La cédula o RUC ya se encuentra registrada.");
-                return "registro";
-            }
 
-            // Validación 2: Verificar si el nombre de usuario ya existe en 'usuario_cliente'
-            // (Para evitar que dos clientes elijan el mismo username)
+        try {
             if (clienteUsuarioRepository.existsByUsername(username)) {
                 model.addAttribute("error", "El nombre de usuario ya está en uso.");
                 return "registro";
             }
 
-            // PASO A: Crear y guardar el nuevo Cliente
-            Cliente nuevoCliente = new Cliente();
-            nuevoCliente.setCedulaRuc(cedulaRuc);
-            nuevoCliente.setNombreCompleto(nombreCompleto);
-            nuevoCliente.setTelefono(telefono);
-            nuevoCliente.setCorreo(correo);
-            
-            // Guardamos en la tabla 'clientes' y JPA nos devuelve el cliente con su 'id_cliente' generado
-            Cliente clienteGuardado = clienteRepositorio.save(nuevoCliente);
+            // BUSCAR CLIENTE O CREAR UNO NUEVO
+            Cliente cliente = clienteRepositorio.findByCedulaRuc(cedulaRuc)
+                    .orElse(new Cliente());
 
-            // PASO B: Crear y guardar las credenciales en 'usuario_cliente'
+            // Actualizamos los datos personales siempre
+            cliente.setCedulaRuc(cedulaRuc);
+            cliente.setNombreCompleto(nombreCompleto);
+            cliente.setTelefono(telefono);
+            Cliente clienteGuardado = clienteRepositorio.save(cliente);
+
+            // Verificar si este cliente físico ya tiene un usuario web
+            // (Opcional: podrías agregar un método existsByCliente en tu repositorio)
+
+            // CREAR CREDENCIALES DE ACCESO
             ClienteUsuario nuevoUsuario = new ClienteUsuario();
             nuevoUsuario.setUsername(username);
-            
-            // ¡IMPORTANTE! Aquí debes encriptar la contraseña antes de guardarla.
-            // Si usas BCrypt de Spring Security, sería: passwordEncoder.encode(password)
-            // Por ahora la guardamos directo para probar el flujo:
-            nuevoUsuario.setPassword(password);
-            
-            // Enlazamos la relación de la clave foránea id_cliente_fk
+            nuevoUsuario.setCorreo(correo); // Correo va en el usuario
+            nuevoUsuario.setPassword(password); // ¡Se encripta automáticamente por tu setter!
             nuevoUsuario.setCliente(clienteGuardado);
 
             clienteUsuarioRepository.save(nuevoUsuario);
 
-            // Si todo sale bien, redirige al login con un parámetro de éxito
             return "redirect:/login?registrado=true";
 
         } catch (Exception e) {
-            model.addAttribute("error", "Error del sistema: " + e.getMessage());
+            model.addAttribute("error", "Error del sistema al registrar. Verifique que el correo no esté en uso.");
             return "registro";
         }
     }
 
-    // PROCESAR EL LOGIN DE FORMA MANUAL
     @PostMapping("/ingresar")
     public String ingresarManualmente(
             @RequestParam("username") String username,
             @RequestParam("password") String password,
-            Model model, 
-            jakarta.servlet.http.HttpSession session) { // Usamos la sesión del navegador
-        
-        // 1. Buscamos al usuario por su username
+            Model model,
+            HttpSession session, // Mantén esta
+            HttpServletRequest request) {
+
+        Optional<Empleado> empleadoOpt = empleadoRepository.findByUsername(username);
+
+        if (empleadoOpt.isPresent()) {
+            Empleado empleado = empleadoOpt.get();
+            // Nota: Asegúrate de que este .equals coincida con cómo guardas la clave
+            if (empleado.getPassword().equals(password)) {
+                if (empleado.isEstadoActivo()) {
+                    // Creamos una sesión nueva limpia
+                    session.invalidate(); // Matas la anterior
+                    HttpSession nuevaSesion = request.getSession(true); // Creas una nueva
+                    nuevaSesion.setAttribute("empleadoLogueado", empleado); // Guardas en la nueva
+
+                    return "redirect:/empleado/ventas";
+                } else {
+                    model.addAttribute("errorMan", "Cuenta de empleado desactivada.");
+                    return "login";
+                }
+            }
+        }
+
+        // 1. EMPLEADOS
+        System.out.println("DEBUG: Buscando usuario: " + username);
         Optional<ClienteUsuario> usuarioOpt = clienteUsuarioRepository.findOptionalByUsername(username);
 
-        // 2. Validamos si existe y si la contraseña coincide en texto plano
-        if (usuarioOpt.isPresent() && usuarioOpt.get().getPassword().equals(password)) {
-            
-            // ¡ÉXITO! Guardamos al cliente en la sesión del navegador para saber quién está conectado
-            Cliente cliente = usuarioOpt.get().getCliente();
-            session.setAttribute("usuarioLogueado", cliente);
-            
-            // Lo mandamos directo a su panel
-            return "redirect:/cliente/dashboard";
+        if (usuarioOpt.isPresent()) {
+            System.out.println("DEBUG: Usuario encontrado. Verificando password...");
+            boolean esValida = usuarioOpt.get().verificarPasswordIngresada(password);
+            System.out.println("DEBUG: ¿Password válida? " + esValida);
+
+            if (esValida) {
+                Cliente cliente = usuarioOpt.get().getCliente();
+                session.setAttribute("usuarioLogueado", cliente);
+                return "redirect:/cliente/dashboard";
+            }
         } else {
-            // Si falla, recargamos el login con el mensaje de error
-            model.addAttribute("errorMan", "Usuario o contraseña incorrectos.");
-            return "login";
+            System.out.println("DEBUG: Usuario NO encontrado en la base de datos.");
         }
+
+        model.addAttribute("errorMan", "Usuario o contraseña incorrectos.");
+        return "login";
     }
 
     // ==========================================
@@ -149,16 +168,16 @@ public class ProductoController {
     // ==========================================
     @GetMapping("/cliente/dashboard")
     public String mostrarDashboardCliente(jakarta.servlet.http.HttpSession session, Model model) {
-        
+
         // A. Revisamos si hay un cliente guardado en la sesión del navegador
         Cliente cliente = (Cliente) session.getAttribute("usuarioLogueado");
-        
+
         // B. Si nadie ha iniciado sesión, lo redirigimos al login por seguridad
         if (cliente == null) {
             return "redirect:/login";
         }
-        
-        // C. Al usar la sesión manual, ya tenemos directamente al objeto Cliente. 
+
+        // C. Al usar la sesión manual, ya tenemos directamente al objeto Cliente.
         // Buscamos sus datos específicos usando tus repositorios
         List<OrdenServicio> misOrdenes = ordenServicioRepositorio.findByDispositivoCliente(cliente);
         List<NotaVenta> misCompras = notaVentaRepositorio.findByCliente(cliente);
@@ -167,7 +186,7 @@ public class ProductoController {
         model.addAttribute("cliente", cliente);
         model.addAttribute("ordenes", misOrdenes);
         model.addAttribute("compras", misCompras);
-        
+
         return "dashboard-cliente"; // Retorna el archivo dashboard-cliente.html
     }
 
@@ -188,34 +207,40 @@ public class ProductoController {
     public String index(jakarta.servlet.http.HttpSession session, Model model) {
         // Pasamos los productos normales
         model.addAttribute("productos", productoRepositorio.findByVisibleEnCatalogoTrue());
-        
+
         // Enviamos al cliente logueado (si es que existe) para no romper el diseño
         Cliente cliente = (Cliente) session.getAttribute("usuarioLogueado");
-        model.addAttribute("cliente", cliente); 
-        
+        model.addAttribute("cliente", cliente);
+
         return "index";
     }
 
     @GetMapping("/productos")
     public String listaProductos(
-            @RequestParam(name = "categoria", required = false) String categoriaStr, 
-            jakarta.servlet.http.HttpSession session, 
+            // Cambiamos el nombre del parámetro a 'subcategoria' para que coincida con tu
+            // HTML
+            @RequestParam(name = "subcategoria", required = false) String subcategoriaStr,
+            jakarta.servlet.http.HttpSession session,
             Model model) {
-        
-        if (categoriaStr != null && !categoriaStr.isEmpty()) {
+
+        // 1. Recuperar cliente para el navbar (lo que ya tenías funcionando)
+        model.addAttribute("cliente", session.getAttribute("usuarioLogueado"));
+
+        // 2. Lógica de filtro por SUBCATEGORÍA
+        if (subcategoriaStr != null && !subcategoriaStr.isEmpty()) {
             try {
-                CategoriaProducto categoriaEnum = CategoriaProducto.valueOf(categoriaStr.toUpperCase());
-                model.addAttribute("productos", productoRepositorio.findByCategoria(categoriaEnum));
+                // Asegúrate de usar el Enum correcto (SubcategoriaProducto)
+                SubcategoriaProducto subEnum = SubcategoriaProducto.valueOf(subcategoriaStr.toUpperCase());
+                // AQUÍ LLAMAS AL MÉTODO DE TU REPOSITORIO
+                model.addAttribute("productos", productoRepositorio.findBySubcategoria(subEnum));
             } catch (IllegalArgumentException e) {
-                model.addAttribute("productos", productoRepositorio.findAll());
+                // Si el nombre no coincide, mostramos todos
+                model.addAttribute("productos", productoRepositorio.findByVisibleEnCatalogoTrue());
             }
         } else {
+            // Filtro por defecto
             model.addAttribute("productos", productoRepositorio.findByVisibleEnCatalogoTrue());
         }
-        
-        // Enviamos al cliente logueado a la vista del catálogo de productos
-        Cliente cliente = (Cliente) session.getAttribute("usuarioLogueado");
-        model.addAttribute("cliente", cliente);
 
         return "productos";
     }

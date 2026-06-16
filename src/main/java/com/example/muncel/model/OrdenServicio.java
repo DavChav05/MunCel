@@ -18,6 +18,9 @@ public class OrdenServicio {
     @Column(name = "falla_reportada", nullable = false, columnDefinition = "TEXT") // TEXT NOT NULL
     private String fallaReportada;
 
+    @Column(name = "numero_orden", unique = true)
+    private Integer numeroOrden;
+
     @Column(name = "observaciones_fisicas", columnDefinition = "TEXT") // TEXT (nullable = true por defecto)
     private String observacionesFisicas;
 
@@ -33,20 +36,22 @@ public class OrdenServicio {
     @JoinColumn(name = "id_dispositivo_fk", referencedColumnName = "idDispositivo", nullable = false)
     private Dispositivo dispositivo;
 
-    // RELACIÓN DE AUDITORÍA: Muchas órdenes son gestionadas por un Empleado (Técnico/Admin)
+    // RELACIÓN DE AUDITORÍA: Muchas órdenes son gestionadas por un Empleado
+    // (Técnico/Admin)
     @ManyToOne
-    @JoinColumn(name = "id_empleado_fk", referencedColumnName = "idEmpleado",nullable = false)
+    @JoinColumn(name = "id_empleado_fk", referencedColumnName = "idEmpleado", nullable = false)
     private Empleado empleado;
 
     public OrdenServicio() {
     }
 
-    public OrdenServicio(Integer idOrden, LocalDateTime fechaIngreso, String fallaReportada,
+    public OrdenServicio(Integer idOrden, LocalDateTime fechaIngreso, String fallaReportada, Integer numeroOrden,
             String observacionesFisicas, BigDecimal presupuestoEstimado, EstadoOrden estado, Dispositivo dispositivo,
             Empleado empleado) {
         this.idOrden = idOrden;
         this.fechaIngreso = fechaIngreso;
         this.fallaReportada = fallaReportada;
+        this.numeroOrden = numeroOrden;
         this.observacionesFisicas = observacionesFisicas;
         this.presupuestoEstimado = presupuestoEstimado;
         this.estado = estado;
@@ -76,6 +81,14 @@ public class OrdenServicio {
 
     public void setFallaReportada(String fallaReportada) {
         this.fallaReportada = fallaReportada;
+    }
+
+    public Integer getNumeroOrden() {
+        return numeroOrden;
+    }
+
+    public void setNumeroOrden(Integer numeroOrden) {
+        this.numeroOrden = numeroOrden;
     }
 
     public String getObservacionesFisicas() {
@@ -118,5 +131,4 @@ public class OrdenServicio {
         this.empleado = empleado;
     }
 
-    
 }

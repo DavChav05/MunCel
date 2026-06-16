@@ -93,13 +93,12 @@ public class Empleado {
         this.rol = rol;
     }
 
-    public Boolean getEstadoActivo() {
+    public boolean isEstadoActivo() {
         return estadoActivo;
     }
 
-    public void setEstadoActivo(Boolean estadoActivo) {
+    public void setEstadoActivo(boolean estadoActivo) {
         this.estadoActivo = estadoActivo;
     }
 
-    
 }

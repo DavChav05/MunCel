@@ -5,31 +5,34 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "clientes")
 public class Cliente {
-@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Equivale a AUTO_INCREMENT
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idCliente;
 
-    @Column(name = "cedula_ruc", length = 13, nullable = false, unique = true) // VARCHAR(13) NOT NULL UNIQUE
+    @Column(name = "cedula_ruc", length = 13, nullable = false, unique = true)
     private String cedulaRuc;
 
-    @Column(name = "nombre_completo", length = 100, nullable = false) // VARCHAR(100) NOT NULL
+    @Column(name = "nombre_completo", length = 100, nullable = false)
     private String nombreCompleto;
 
-    @Column(length = 15) // VARCHAR(15)
+    @Column(length = 15)
     private String telefono;
 
-    @Column(length = 100) // VARCHAR(100)
-    private String correo;
+    
+
+    // ---> NUEVO CAMPO DIRECCIÓN <---
+    @Column(length = 200)
+    private String direccion;
 
     // --- CONSTRUCTORES ---
     public Cliente() {
     }
 
-    public Cliente(String cedulaRuc, String nombreCompleto, String telefono, String correo) {
+    public Cliente(String cedulaRuc, String nombreCompleto, String telefono, String direccion) {
         this.cedulaRuc = cedulaRuc;
         this.nombreCompleto = nombreCompleto;
         this.telefono = telefono;
-        this.correo = correo;
+        this.direccion = direccion;
     }
 
     // --- GETTERS Y SETTERS ---
@@ -37,7 +40,7 @@ public class Cliente {
         return idCliente;
     }
 
-    public void setId(Integer idCliente) {
+    public void setIdCliente(Integer idCliente) {
         this.idCliente = idCliente;
     }
 
@@ -65,11 +68,11 @@ public class Cliente {
         this.telefono = telefono;
     }
 
-    public String getCorreo() {
-        return correo;
+    public String getDireccion() {
+        return direccion;
     }
 
-    public void setCorreo(String correo) {
-        this.correo = correo;
+    public void setDireccion(String direccion) {
+        this.direccion = direccion;
     }
 }

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mundo Celular - Consulta de Servicio Técnico</title>
+    <title>Muncel - Consulta de Servicio Técnico</title>
     <link rel="stylesheet" th:href="@{/estilos.css}">
 </head>
 
@@ -15,29 +15,21 @@
         <div class="nav-links">
             <a th:href="@{/}">Inicio</a>
             <a th:href="@{/productos}">Productos</a>
-
-            <a th:if="${cliente == null}" th:href="@{/servicio-tecnico}" class="active">Servicio Técnico</a>
-
+            <a th:href="@{/servicio-tecnico}" class="active">Servicio Técnico</a>
             <button class="btn-nav" onclick="abrirModal()">Mi Info</button>
-
-            <a th:if="${cliente == null}" th:href="@{/login}" class="btn-login">Iniciar Sesión</a>
-
-            <a th:if="${cliente != null}" th:href="@{/cliente/dashboard}" class="active">Mi Panel</a>
-            <a th:if="${cliente != null}" th:href="@{/logout}" class="btn-login"
-                style="background: var(--color-rojo);">Cerrar Sesión</a>
+            <a th:href="@{/login}" class="btn-login">Iniciar Sesión</a>
         </div>
     </nav>
 
     <div class="container">
-        <h1>Seguimiento Técnico Muncel</h1>
+        <h1>Seguimiento de Reparación</h1>
 
         <div class="search-box">
-            <p>Ingresa el número de orden asignado a tu dispositivo para conocer el estado de tu reparación en tiempo
-                real.</p>
+            <p>Introduce los 4 dígitos de tu orden impresa para conocer el avance de tu equipo en tiempo real.</p>
             <form th:action="@{/servicio-tecnico/buscar}" method="GET">
                 <div class="form-group">
-                    <input type="text" name="numeroOrden" class="input-orden" placeholder="Ej: 1"
-                        th:value="${numeroOrden}" required>
+                    <input type="text" name="numeroOrden" class="input-orden" th:value="${numeroOrden}"
+                        inputmode="numeric" maxlength="4" placeholder="Ej: 1001" required>
                     <button type="submit" class="btn-buscar">Buscar Orden</button>
                 </div>
             </form>
@@ -48,46 +40,31 @@
         </div>
 
         <div class="resultado-card" th:if="${servicio}">
-            <h2>Detalles de la Orden #<span th:text="${servicio.idOrden}" class="orden-texto"></span></h2>
-
+            <h2>Detalles de la Orden</h2>
+            <hr>
             <div class="info-grid">
 
                 <div class="info-item">
-                    <label>Dispositivo</label>
-                    <span th:text="${servicio.dispositivo.nombreProducto}"></span>
+                    <label>Equipo / Modelo</label>
+                    <span th:text="${dispositivoNombre}"></span>
                 </div>
 
-                <div class="info-item status-active">
-                    <label>Estado Actual</label>
-                    <span th:if="${servicio.estado.name() == 'INGRESADO'}" class="badge badge-recibido">Ingresado</span>
-                    <span th:if="${servicio.estado.name() == 'REPARANDO'}" class="badge badge-reparacion">En
-                        Taller</span>
-                    <span th:if="${servicio.estado.name() == 'TERMINADO'}" class="badge badge-terminado">Listo para
-                        Entrega</span>
-                    <span th:if="${servicio.estado.name() == 'ENTREGADO'}"
+                <div class="info-item">
+                    <label>Estado del Trabajo</label>
+                    <span th:if="${servicio.estado != null && servicio.estado.name() == 'INGRESADO'}"
+                        class="badge badge-recibido">Ingresado</span>
+                    <span th:if="${servicio.estado != null && servicio.estado.name() == 'REPARANDO'}"
+                        class="badge badge-reparacion">En Taller</span>
+                    <span th:if="${servicio.estado != null && servicio.estado.name() == 'TERMINADO'}"
+                        class="badge badge-terminado">Listo para Entrega</span>
+                    <span th:if="${servicio.estado != null && servicio.estado.name() == 'ENTREGADO'}"
                         class="badge badge-entregado">Entregado</span>
                 </div>
 
                 <div class="info-item">
                     <label>Falla Reportada</label>
-                    <span th:text="${servicio.fallaReportada}"></span>
-                </div>
-
-                <div class="info-item">
-                    <label>Observaciones Físicas</label>
                     <span
-                        th:text="${servicio.observacionesFisicas != null && !servicio.observacionesFisicas.empty} ? ${servicio.observacionesFisicas} : 'Ninguna'"></span>
-                </div>
-
-                <div class="info-item">
-                    <label>Presupuesto Estimado</label>
-                    <span style="color: #00ff88; font-weight: bold;"
-                        th:text="'$' + ${servicio.presupuestoEstimado}">$0.00</span>
-                </div>
-
-                <div class="info-item">
-                    <label>Técnico Asignado</label>
-                    <span th:text="${servicio.empleado.id}"></span>
+                        th:text="${servicio.fallaReportada != null} ? ${servicio.fallaReportada} : 'No especificada'"></span>
                 </div>
 
             </div>
@@ -139,7 +116,6 @@
             <p>&copy; 2026 Mundo Celular - Todos los derechos reservados.</p>
         </div>
     </footer>
-
 </body>
 
 </html>

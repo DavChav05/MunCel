@@ -55,7 +55,8 @@ body {
     transition: color 0.3s;
 }
 
-.nav-links a:hover, .nav-links a.active {
+.nav-links a:hover,
+.nav-links a.active {
     color: var(--color-rojo);
 }
 
@@ -86,7 +87,8 @@ body {
 }
 
 /* CONTENEDOR Y HEADER */
-.contenedor-principal, .container {
+.contenedor-principal,
+.container {
     max-width: 1100px;
     margin: 40px auto;
     padding: 0 20px;
@@ -97,7 +99,8 @@ body {
     margin-bottom: 40px;
 }
 
-.tienda-header h1, h1 {
+.tienda-header h1,
+h1 {
     font-size: 36px;
     color: var(--color-rojo);
     text-transform: uppercase;
@@ -332,7 +335,7 @@ body {
     background-color: #1a1a1a;
     border-radius: 8px;
     padding: 25px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
     border: 1px solid #222222;
 }
 
@@ -386,16 +389,34 @@ body {
     font-weight: bold;
 }
 
-.badge-recibido { background-color: #ff9800; color: #000000; }
-.badge-reparacion { background-color: #2196f3; color: #ffffff; }
-.badge-terminado { background-color: #4caf50; color: #ffffff; }
-.badge-entregado { background-color: #9e9e9e; color: #ffffff; }
+.badge-recibido {
+    background-color: #ff9800;
+    color: #000000;
+}
+
+.badge-reparacion {
+    background-color: #2196f3;
+    color: #ffffff;
+}
+
+.badge-terminado {
+    background-color: #4caf50;
+    color: #ffffff;
+}
+
+.badge-entregado {
+    background-color: #9e9e9e;
+    color: #ffffff;
+}
 
 /* MODALES */
 .modal {
     display: none;
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background-color: rgba(0, 0, 0, 0.8);
     justify-content: center;
     align-items: center;
@@ -415,21 +436,39 @@ body {
 
 .close-modal {
     position: absolute;
-    top: 15px; right: 20px;
+    top: 15px;
+    right: 20px;
     font-size: 28px;
     cursor: pointer;
     color: var(--color-texto-gris);
 }
 
-.close-modal:hover { color: var(--color-rojo); }
+.close-modal:hover {
+    color: var(--color-rojo);
+}
 
-.modal h2 { margin-bottom: 10px; color: var(--color-rojo); }
+.modal h2 {
+    margin-bottom: 10px;
+    color: var(--color-rojo);
+}
 
-.modal hr { border: 0; height: 1px; background: #333; margin-bottom: 15px; }
+.modal hr {
+    border: 0;
+    height: 1px;
+    background: #333;
+    margin-bottom: 15px;
+}
 
 .btn-cerrar {
-    width: 100%; margin-top: 15px; background-color: var(--color-rojo);
-    color: white; border: none; padding: 10px; cursor: pointer; font-weight: bold; border-radius: 4px;
+    width: 100%;
+    margin-top: 15px;
+    background-color: var(--color-rojo);
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 4px;
 }
 
 /* FOOTER */
@@ -462,9 +501,13 @@ body {
     line-height: 1.6;
 }
 
-.footer-seccion ul { list-style: none; }
+.footer-seccion ul {
+    list-style: none;
+}
 
-.footer-seccion ul li { margin-bottom: 10px; }
+.footer-seccion ul li {
+    margin-bottom: 10px;
+}
 
 .footer-seccion ul li a {
     color: #cccccc;
@@ -500,7 +543,9 @@ body {
         gap: 12px;
     }
 
-    .nav-links a, .btn-nav, .btn-login {
+    .nav-links a,
+    .btn-nav,
+    .btn-login {
         width: 100%;
         text-align: center;
         display: block;
@@ -511,7 +556,9 @@ body {
         text-align: center;
     }
 
-    .card-info-main { align-items: center; }
+    .card-info-main {
+        align-items: center;
+    }
 
     .card-action-side {
         border-left: none;
@@ -544,7 +591,8 @@ body {
 
 .login-wrapper {
     width: 100%;
-    max-width: 440px; /* Unificado para que ambas tarjetas se vean uniformes */
+    max-width: 440px;
+    /* Unificado para que ambas tarjetas se vean uniformes */
 }
 
 /* Tarjeta de acceso y registro */
@@ -559,7 +607,7 @@ body {
 
 /* Forzar ancho superior en el registro */
 .card-registro {
-    max-width: 550px !important; 
+    max-width: 550px !important;
 }
 
 /* Encabezado interno */
@@ -588,7 +636,8 @@ body {
     flex-direction: column;
     gap: 8px;
     margin-bottom: 20px;
-    width: 100%; /* Garantiza que ocupe todo el contenedor */
+    width: 100%;
+    /* Garantiza que ocupe todo el contenedor */
 }
 
 .grupo-campo label {
@@ -606,8 +655,9 @@ body {
     font-size: 15px;
     border-radius: 4px;
     transition: border-color 0.3s, box-shadow 0.3s;
-    width: 100%; /* Corregido: evita que el input sobresalga */
-    box-sizing: border-box; 
+    width: 100%;
+    /* Corregido: evita que el input sobresalga */
+    box-sizing: border-box;
 }
 
 .grupo-campo input:focus {
@@ -658,17 +708,19 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 48px; /* Altura idéntica fija */
+    height: 48px;
+    /* Altura idéntica fija */
     font-size: 14px;
     font-weight: bold;
     border-radius: 6px;
     box-sizing: border-box;
     text-decoration: none;
-    text-transform: uppercase; /* Ambos en Mayúsculas corporativas */
+    text-transform: uppercase;
+    /* Ambos en Mayúsculas corporativas */
     letter-spacing: 1px;
     transition: all 0.3s ease;
     cursor: pointer;
-    margin: 0; 
+    margin: 0;
     width: 50%;
 }
 
@@ -681,14 +733,16 @@ body {
 
 .botones-acciones-login .btn-acceso-submit:hover {
     background-color: var(--color-rojo-hover);
-    transform: none; /* Quitamos escalas que descuadraban el flex */
+    transform: none;
+    /* Quitamos escalas que descuadraban el flex */
 }
 
 /* ESTILO SECUNDARIO INVERTIDO: Botón Volver al Inicio (Delineado) */
 .botones-acciones-login .btn-regresar-inicio {
     background-color: transparent;
     color: var(--color-rojo);
-    border: 2px solid var(--color-rojo); /* Línea de borde un poco más gruesa para peso visual */
+    border: 2px solid var(--color-rojo);
+    /* Línea de borde un poco más gruesa para peso visual */
 }
 
 .botones-acciones-login .btn-regresar-inicio:hover {
@@ -758,8 +812,9 @@ body {
     font-size: 15px;
     border-radius: 4px;
     transition: border-color 0.3s, box-shadow 0.3s;
-    width: 100%; 
-    box-sizing: border-box; /* Crucial para evitar desbordes */
+    width: 100%;
+    box-sizing: border-box;
+    /* Crucial para evitar desbordes */
 }
 
 /* Manejo de la cuadrícula en paralelo */
@@ -768,12 +823,13 @@ body {
     gap: 15px;
     width: 100%;
     box-sizing: border-box;
-    margin-bottom: 5px; /* Pequeño espacio inferior entre bloques */
+    margin-bottom: 5px;
+    /* Pequeño espacio inferior entre bloques */
 }
 
 .col-mitad {
     flex: 1;
-    min-width: 0; 
+    min-width: 0;
 }
 
 /* Ajuste responsivo para pantallas móviles */
@@ -782,12 +838,12 @@ body {
         flex-direction: column;
         gap: 0;
     }
-    
+
     .botones-acciones-login {
         flex-direction: column;
         gap: 10px;
     }
-    
+
     .botones-acciones-login .btn-acceso-submit,
     .botones-acciones-login .btn-regresar-inicio {
         width: 100%;
@@ -800,7 +856,8 @@ body {
     color: #ffffff;
     border: none;
     width: 100%;
-    height: 48px; /* Misma altura unificada que usamos antes */
+    height: 48px;
+    /* Misma altura unificada que usamos antes */
     font-size: 14px;
     font-weight: bold;
     text-transform: uppercase;
@@ -816,4 +873,176 @@ body {
 /* Efecto Hover */
 .btn-acceso-submit:hover {
     background-color: var(--color-rojo-hover);
+}
+
+/* --- ESTILOS PARA CONSULTA DE SERVICIO TÉCNICO --- */
+
+/* Alertas de error en el buscador */
+.alert-error {
+    background-color: rgba(255, 74, 74, 0.15);
+    border: 1px solid var(--color-rojo, #ff4a4a);
+    color: #ff6b6b;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+/* Tarjeta contenedora de resultados */
+.resultado-card {
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 25px;
+    margin-top: 25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.resultado-card h2 {
+    color: #ffffff;
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+}
+
+.orden-texto {
+    color: var(--color-primario, #00ffff);
+    font-weight: bold;
+}
+
+/* Grid de información */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.info-item label {
+    color: #888888;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-item span {
+    color: #ffffff;
+    font-size: 1.05rem;
+    font-weight: 500;
+}
+
+/* Detalles de presupuesto con color destacado */
+.precio-destacado {
+    color: #00ff88 !important;
+    font-weight: bold;
+}
+
+/* Badges para los estados de reparación */
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    width: fit-content;
+}
+
+.badge-recibido {
+    background-color: #2c3e50;
+    color: #3498db;
+}
+
+.badge-reparacion {
+    background-color: #d35400;
+    color: #f39c12;
+}
+
+.badge-terminado {
+    background-color: #27ae60;
+    color: #2ecc71;
+}
+
+.badge-entregado {
+    background-color: #7f8c8d;
+    color: #bdc3c7;
+}
+
+/* DISEÑO DE TARJETAS PARA EL SERVICIO TÉCNICO */
+.grid-servicios {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    margin-top: 15px;
+}
+
+.tarjeta-servicio-cliente {
+    background: #1e293b;
+    /* El mismo fondo oscuro corporativo de los headers */
+    border-radius: 12px;
+    border: 1px solid #334155;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Si usas la opción oscura, añade esta regla abajo para que el nombre del dispositivo se lea en blanco: */
+.tarjeta-servicio-cliente h3 {
+    color: #ffffff !important;
+}
+
+/* Y esta regla para que la descripción de la falla no se pierda: */
+.falla-texto {
+    color: #94a3b8 !important;
+}
+
+.tarjeta-servicio-cliente:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.tarjeta-servicio-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 1px dashed #e2e8f0;
+    padding-bottom: 10px;
+}
+
+.orden-id-badge {
+    font-weight: 700;
+    color: var(--color-rojo, #dc2626);
+    font-size: 0.95rem;
+}
+
+.tarjeta-servicio-body h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.2rem;
+    color: #1e293b;
+}
+
+.falla-texto {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+.tarjeta-servicio-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+.presupuesto-txt {
+    font-weight: 700;
+    color: #16a34a;
+    font-size: 1.05rem;
 }
