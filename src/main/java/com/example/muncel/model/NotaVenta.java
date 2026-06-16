@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import java.util.List;
+
 @Entity
 @Table(name = "NotaVenta")
 public class NotaVenta {
@@ -12,7 +14,7 @@ public class NotaVenta {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Equivale a AUTO_INCREMENT
     private Integer idNotaVenta;
 
-    @Column(name = "numero_factura", nullable = false, unique = true) 
+    @Column(name = "numero_factura", nullable = false, unique = true)
     private Integer numeroFactura;
 
     @Column(name = "fecha_emision", nullable = false) // DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -33,6 +35,9 @@ public class NotaVenta {
     @JoinColumn(name = "id_empleado_fk", referencedColumnName = "idEmpleado", nullable = false) // Llave foránea en
                                                                                                 // MySQL
     private Empleado empleado;
+
+    @OneToMany(mappedBy = "notaVenta", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<DetalleVenta> detalles;
 
     public NotaVenta() {
     }
@@ -93,5 +98,9 @@ public class NotaVenta {
 
     public void setEmpleado(Empleado empleado) {
         this.empleado = empleado;
+    }
+
+    public List<DetalleVenta> getDetalles() {
+        return detalles;
     }
 }

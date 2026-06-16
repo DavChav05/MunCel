@@ -3,66 +3,104 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Ticket de Venta</title>
+    <title>Impresión Nota de Venta</title>
     <style>
-        /* MEDIDAS ESTÁNDAR PARA IMPRESORA TÉRMICA 80mm */
+        /* Configuración de página A4 sin márgenes del navegador */
         @page {
+            size: A4;
             margin: 0;
         }
 
         body {
+            margin: 0;
+            padding: 0;
             font-family: 'Courier New', Courier, monospace;
-            width: 80mm;
-            /* Ancho del ticket */
-            margin: 0 auto;
-            padding: 5mm;
-            font-size: 12px;
+            font-size: 11px;
+            /* Un punto más pequeño para garantizar espacio */
             color: #000;
         }
 
-        .centrado {
-            text-align: center;
+        /* Contenedor del tamaño exacto de tu libretín (A6) */
+        .nota-venta-contenedor {
+            width: 10.2cm;
+            height: 14.8cm;
+            padding: 1cm;
+            /* Margen interno de 1cm en los 4 lados */
+            box-sizing: border-box;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
-        .negrita {
-            font-weight: bold;
+        /* Bloque principal de contenido que arranca exactamente a 4cm del borde superior */
+        .bloque-contenido {
+            position: absolute;
+            top: 4cm;
+            left: 1cm;
+            right: 1cm;
         }
 
-        .separador {
-            border-top: 1px dashed #000;
-            margin: 5px 0;
+        .datos-cliente p {
+            margin: 2px 0;
+            /* Espaciado vertical mínimo entre datos */
+            line-height: 1.2;
         }
 
-        table {
+        /* Línea separadora compacta */
+        .linea-separadora {
+            border-top: 1px solid #000;
+            margin: 4px 0 6px 0;
+            /* Espacio mínimo arriba y abajo de la línea */
+        }
+
+        /* Tabla de detalles pegada a la línea */
+        .tabla-detalles {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 0;
+            /* Elimina cualquier separación exagerada */
         }
 
-        th,
-        td {
+        .tabla-detalles th {
             text-align: left;
             padding: 2px 0;
             font-size: 11px;
+            border-bottom: 1px dashed #000;
+            /* Línea sutil para cabecera de tabla */
         }
 
-        th {
-            border-bottom: 1px solid #000;
+        .tabla-detalles td {
+            text-align: left;
+            padding: 3px 0;
+            font-size: 11px;
+            vertical-align: middle;
         }
 
-        .total-row td {
-            font-weight: bold;
-            font-size: 13px;
-            border-top: 1px dashed #000;
-            padding-top: 5px;
+        /* Forzar una sola línea en la descripción y ocultar desbordes si el texto es muy largo */
+        .col-descripcion {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 4.5cm;
+            /* Controla que no empuje las otras columnas */
         }
 
         .derecha {
             text-align: right;
         }
 
-        /* Ocultar botón al imprimir */
+        /* Bloque Total posicionado exactamente a 3.5cm desde el borde inferior hacia arriba */
+        .total-bloque {
+            position: absolute;
+            bottom: 3.5cm;
+            right: 1cm;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        /* Ocultar elementos de pantalla al mandar a la impresora */
         @media print {
-            .no-print {
+            .barra-controles {
                 display: none;
             }
         }
@@ -71,59 +109,61 @@
 
 <body>
 
-    <div class="no-print" style="text-align: center; margin-bottom: 10px;">
+    <div class="barra-controles"
+        style="padding: 10px; background: #f0f0f0; border-bottom: 1px solid #ccc; text-align: center;">
         <button onclick="window.print()"
-            style="padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">🖨️
-            Imprimir Ticket</button>
+            style="padding: 6px 12px; cursor: pointer; background: #007bff; color: #fff; border: none; border-radius: 4px;">🖨️
+            Mandar a Imprimir</button>
         <a th:href="@{/empleado/ventas}"
-            style="padding: 10px; margin-left: 10px; text-decoration: none; background: #6c757d; color: white; border-radius: 5px;">Volver</a>
+            style="padding: 6px 12px; margin-left: 10px; text-decoration: none; background: #6c757d; color: white; border-radius: 4px;">Volver
+            a Ventas</a>
     </div>
 
-    <div class="centrado">
-        <h2 style="margin: 0; font-size: 16px;">MUNDO CELULAR</h2>
-        <p style="margin: 2px 0;">Le da vida a tu celular</p>
-        <p style="margin: 2px 0;">Av. Principal - Sector Sur</p>
-    </div>
+    <div class="nota-venta-contenedor">
 
-    <div class="separador"></div>
+        <div class="bloque-contenido">
 
-    <div>
-        <p style="margin: 2px 0;"><strong>TICKET NO:</strong> <span th:text="${nota.idNotaVenta}"></span></p>
-        <p style="margin: 2px 0;"><strong>FECHA:</strong> <span
-                th:text="${#temporals.format(nota.fechaEmision, 'dd/MM/yyyy HH:mm')}"></span></p>
-        <p style="margin: 2px 0;"><strong>CLIENTE:</strong> <span th:text="${nota.cliente.nombreCompleto}"></span></p>
-        <p style="margin: 2px 0;"><strong>C.I/RUC:</strong> <span th:text="${nota.cliente.cedulaRuc}"></span></p>
-    </div>
+            <div class="datos-cliente">
+                <p><strong>FECHA:</strong> <span
+                        th:text="${#temporals.format(nota.fechaEmision, 'dd/MM/yyyy HH:mm')}"></span></p>
+                <p><strong>CLIENTE:</strong> <span th:text="${nota.cliente.nombreCompleto}"></span></p>
+                <p>
+                    <strong>C.I/RUC:</strong> <span th:text="${nota.cliente.cedulaRuc}"></span>
+                    <span style="margin-left: 20px;"><strong>TELÉFONO:</strong> <span
+                            th:text="${nota.cliente.telefono}"></span></span>
+                </p>
+                <p><strong>DIRECCIÓN:</strong> <span th:text="${nota.cliente.direccion}"></span></p>
+            </div>
 
-    <div class="separador"></div>
+            <div class="linea-separadora"></div>
 
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 15%;">CANT</th>
-                <th style="width: 55%;">DESCRIPCIÓN</th>
-                <th style="width: 30%;" class="derecha">SUBT</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="detalle : ${nota.detalles}">
-                <td th:text="${detalle.cantidad}"></td>
-                <td th:text="${detalle.producto.nombreProducto}"></td>
-                <td class="derecha">$<span th:text="${detalle.subtotalLinea}"></span></td>
-            </tr>
-            <tr class="total-row">
-                <td colspan="2">TOTAL A PAGAR:</td>
-                <td class="derecha">$<span th:text="${nota.totalPagar}"></span></td>
-            </tr>
-        </tbody>
-    </table>
+            <table class="tabla-detalles">
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">CANT</th>
+                        <th style="width: 58%;">DESCRIPCIÓN</th>
+                        <th style="width: 13%;" class="derecha">P.U</th>
+                        <th style="width: 17%;" class="derecha">SUBT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="detalle : ${nota.detalles}">
+                        <td th:text="${detalle.cantidad}"></td>
+                        <td class="col-descripcion">
+                            <span th:text="${detalle.producto.nombreProducto}"></span><span
+                                th:text="${detalle.producto.subcategoria != null ? ' (' + detalle.producto.subcategoria + ')' : ''}"></span>
+                        </td>
+                        <td class="derecha">$<span th:text="${detalle.precioUnitarioHistorico}"></span></td>
+                        <td class="derecha">$<span th:text="${detalle.subtotalLinea}"></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-    <div class="separador"></div>
+        <div class="total-bloque">
+            <span>TOTAL: $<span th:text="${nota.totalPagar}"></span></span>
+        </div>
 
-    <div class="centrado">
-        <p style="margin: 5px 0;">¡Gracias por su compra!</p>
-        <p style="margin: 2px 0; font-size: 10px;">Los accesorios tienen 30 días de garantía por defectos de fábrica.
-        </p>
     </div>
 
 </body>

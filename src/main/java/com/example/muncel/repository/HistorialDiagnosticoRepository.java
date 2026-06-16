@@ -1,15 +1,15 @@
-package com.example.muncel.repository;
+    package com.example.muncel.repository;
 
-import java.util.List;
+    import java.util.List;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+    import org.springframework.data.jpa.repository.JpaRepository;
+    import org.springframework.stereotype.Repository;
 
-import com.example.muncel.model.HistorialDiagnostico;
+    import com.example.muncel.model.HistorialDiagnostico;
 
-@Repository
+    @Repository
 
-public interface HistorialDiagnosticoRepository extends JpaRepository<HistorialDiagnostico, Long>{
+    public interface HistorialDiagnosticoRepository extends JpaRepository<HistorialDiagnostico, Long>{
 
-    List<HistorialDiagnostico> findByAccionRealizada(String accionRealizada);
-}
+        List<HistorialDiagnostico> findByAccionRealizada(String accionRealizada);
+    }

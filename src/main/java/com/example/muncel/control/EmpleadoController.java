@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.muncel.model.DetalleVenta;
@@ -102,32 +103,44 @@ public class EmpleadoController {
     // --- ACCIÓN: AGREGAR AL CARRITO ---
     @PostMapping("/empleado/ventas/agregar")
     public String agregarAlCarrito(@RequestParam String codigoProducto,
-            @RequestParam Integer cantidad) {
-
-        // LÍNEA DE DEPURACIÓN PARA VER SI HAY ESPACIOS EN BLANCO
-        System.out.println("DEBUG - Código recibido desde el HTML: [" + codigoProducto + "]");
+            @RequestParam Integer cantidad,
+            RedirectAttributes redirectAttributes) { // <-- Agregamos RedirectAttributes
 
         // 1. Buscar producto
         Producto producto = productoRepositorio.findByCodigoProducto(codigoProducto).orElse(null);
 
         if (producto == null) {
-            System.out.println("DEBUG - El producto resultó NULL. No se encontró en la BDD.");
             return "redirect:/empleado/ventas?error=NoEncontrado";
         }
 
-        System.out.println("DEBUG - ¡Producto encontrado! Nombre: " + producto.getNombreProducto());
+        // 🛑 NUEVA VALIDACIÓN: Verificar lo que ya está en el carrito para este
+        // producto
+        List<DetalleVenta> detallesSueltos = detalleVentaRepositorio.findByNotaVentaIsNull();
+        int cantidadActualEnCarrito = detallesSueltos.stream()
+                .filter(d -> d.getProducto() != null
+                        && d.getProducto().getIdProducto().equals(producto.getIdProducto()))
+                .mapToInt(DetalleVenta::getCantidad)
+                .sum();
 
-        // 2. Crear el detalle directamente
+        // Si lo que ya hay en el carrito + lo nuevo supera el stock, se bloquea de
+        // inmediato
+        if (producto.getStock() < (cantidadActualEnCarrito + cantidad)) {
+            redirectAttributes.addFlashAttribute("errorStock",
+                    "No se puede agregar. El producto '" + producto.getNombreProducto() +
+                            "' solo tiene " + producto.getStock() + " unidades en stock (Ya tienes "
+                            + cantidadActualEnCarrito + " en el carrito).");
+            return "redirect:/empleado/ventas";
+        }
+
+        // 2. Si pasa la validación, se crea el detalle de forma normal
         DetalleVenta detalle = new DetalleVenta();
         detalle.setProducto(producto);
         detalle.setCantidad(cantidad);
 
-        // Calculamos valores históricos
         BigDecimal precio = producto.getPrecioVenta();
         detalle.setPrecioUnitarioHistorico(precio);
         detalle.setSubtotalLinea(precio.multiply(new BigDecimal(cantidad)));
 
-        // 3. Guardar el detalle "suelto" en la base de datos
         detalleVentaRepositorio.save(detalle);
 
         return "redirect:/empleado/ventas";
@@ -147,24 +160,43 @@ public class EmpleadoController {
     }
 
     // --- ACCIÓN: EMITIR NOTA, REGISTRAR CLIENTE Y RESTAR STOCK ---
-    @Transactional // ¡No olvides esto para lo del stock!
+    @Transactional
     @PostMapping("/empleado/ventas/emitir")
     public String emitirNota(@RequestParam String cedula,
             @RequestParam String nombreCliente,
             @RequestParam(required = false) String telefono,
             @RequestParam(required = false) String direccion,
-            HttpSession session) {
+            @RequestParam Integer numeroFactura, // <-- Este es el número manual del formulario
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
 
-        // Verificamos si hay un empleado en la sesión
         Empleado empleadoLogueado = (Empleado) session.getAttribute("empleadoLogueado");
-        if (empleadoLogueado == null) {
-            return "redirect:/login"; // Si no hay, lo mandamos al login
-        }
+        if (empleadoLogueado == null)
+            return "redirect:/login";
 
-        // 1. Validar que el carrito no esté vacío
         List<DetalleVenta> detallesSueltos = detalleVentaRepositorio.findByNotaVentaIsNull();
-        if (detallesSueltos.isEmpty()) {
+        if (detallesSueltos.isEmpty())
             return "redirect:/empleado/ventas?error=CarritoVacio";
+
+        // 🛑 VALIDACIÓN DE STOCK DEFINITIVA (Agrupando cantidades duplicadas)
+        for (DetalleVenta d : detallesSueltos) {
+            Producto prod = d.getProducto();
+            if (prod != null) {
+                // Sumamos todas las líneas de este mismo producto en el carrito
+                int totalPedido = detallesSueltos.stream()
+                        .filter(item -> item.getProducto() != null
+                                && item.getProducto().getIdProducto().equals(prod.getIdProducto()))
+                        .mapToInt(DetalleVenta::getCantidad)
+                        .sum();
+
+                if (prod.getStock() < totalPedido) {
+                    redirectAttributes.addFlashAttribute("errorStock",
+                            "Error al emitir. El producto '" + prod.getNombreProducto() +
+                                    "' no tiene stock suficiente para cubrir el total del carrito (Stock: "
+                                    + prod.getStock() + ").");
+                    return "redirect:/empleado/ventas";
+                }
+            }
         }
 
         // 2. Buscar Cliente o crearlo
@@ -181,24 +213,18 @@ public class EmpleadoController {
         // 3. Crear y configurar la Nota de Venta
         NotaVenta nota = new NotaVenta();
         nota.setCliente(cliente);
-
-        // ¡LA LÍNEA QUE FALTABA! Le asignamos el empleado que está haciendo la venta
         nota.setEmpleado(empleadoLogueado);
-
         nota.setFechaEmision(LocalDateTime.now());
 
-        NotaVenta ultimaNota = notaVentaRepositorio.findTopByOrderByNumeroFacturaDesc();
-        int siguienteNumero = (ultimaNota != null && ultimaNota.getNumeroFactura() != null)
-                ? ultimaNota.getNumeroFactura() + 1
-                : 4001;
-        nota.setNumeroFactura(siguienteNumero);
+        // CORRECCIÓN AQUÍ: Asignamos el número que tú enviaste manualmente desde el
+        // input del libretín
+        nota.setNumeroFactura(numeroFactura);
 
         BigDecimal totalVenta = detallesSueltos.stream()
                 .map(DetalleVenta::getSubtotalLinea)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         nota.setTotalPagar(totalVenta);
 
-        // Ahora sí, se guarda sin problema
         nota = notaVentaRepositorio.save(nota);
 
         // 4. Vincular detalles y descontar Stock
@@ -216,6 +242,22 @@ public class EmpleadoController {
             detalleVentaRepositorio.save(d);
         }
 
-        return "redirect:/empleado/ventas?exito=true&idVenta=" + nota.getIdNotaVenta();
+        return "redirect:/empleado/imprimir-venta?idVenta=" + nota.getIdNotaVenta();
+    }
+
+    @GetMapping("/empleado/imprimir-venta")
+    public String mostrarTicket(@RequestParam Integer idVenta, Model model, HttpSession session) {
+        if (!esEmpleado(session))
+            return "redirect:/login";
+
+        // Buscamos la nota generada por su ID
+        Optional<NotaVenta> notaOpt = notaVentaRepositorio.findById(idVenta);
+
+        if (notaOpt.isPresent()) {
+            model.addAttribute("nota", notaOpt.get());
+            return "empleado/imprimir-venta"; // Apunta a tu archivo imprimir-venta.html
+        }
+
+        return "redirect:/empleado/ventas?error=NotaNoEncontrada";
     }
 }

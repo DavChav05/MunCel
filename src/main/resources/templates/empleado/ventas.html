@@ -24,6 +24,11 @@
         </div>
     </nav>
 
+    <div th:if="${errorStock}"
+        style="background-color: #ffdddd; color: #ff0000; padding: 15px; border-left: 6px solid #ff3333; margin-bottom: 20px; border-radius: 4px; font-weight: bold;">
+        ⚠️ <span th:text="${errorStock}"></span>
+    </div>
+
     <main class="container">
         <h1>Venta en Proceso</h1>
 
@@ -109,6 +114,15 @@
             <p class="instruccion-cliente">Para Consumidor Final, ingrese 9999999999 y "Consumidor Final".</p>
 
             <form th:action="@{/empleado/ventas/emitir}" method="POST" class="form-emision">
+
+                <div class="grupo-input"
+                    style="margin-bottom: 15px; background: #222; padding: 10px; border-radius: 4px; border: 1px dashed var(--color-rojo);">
+                    <label style="color: var(--color-texto-blanco); font-weight: bold;">📝 Número de Nota de Venta
+                        (Libretín):</label>
+                    <input type="number" name="numeroFactura" th:value="${proximoNumero}" required
+                        style="font-size: 16px; font-weight: bold; color: #ff3333; text-align: center; width: 150px; display: block; margin-top: 5px;">
+                    <small style="color: var(--color-texto-gris); display: block; margin-top: 5px;"></small>
+                </div>
 
                 <div class="grupo-input-verificar">
                     <label>Cédula / RUC:</label>
