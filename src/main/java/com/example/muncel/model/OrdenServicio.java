@@ -3,6 +3,7 @@ package com.example.muncel.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "OrdenServicio")
@@ -41,6 +42,9 @@ public class OrdenServicio {
     @ManyToOne
     @JoinColumn(name = "id_empleado_fk", referencedColumnName = "idEmpleado", nullable = false)
     private Empleado empleado;
+
+    @OneToMany(mappedBy = "ordenServicio", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<HistorialDiagnostico> historialesDiagnostico;
 
     public OrdenServicio() {
     }
@@ -129,6 +133,14 @@ public class OrdenServicio {
 
     public void setEmpleado(Empleado empleado) {
         this.empleado = empleado;
+    }
+
+    public List<HistorialDiagnostico> getHistorialesDiagnostico() {
+        return historialesDiagnostico;
+    }
+
+    public void setHistorialesDiagnostico(List<HistorialDiagnostico> historialesDiagnostico) {
+        this.historialesDiagnostico = historialesDiagnostico;
     }
 
 }

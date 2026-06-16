@@ -146,7 +146,7 @@
 
                     <div class="grupo-input">
                         <label>Observaciones Físicas de Recepción:</label>
-                        <textarea name="observationsFisicas" rows="2" placeholder="Ej: Pantalla trizada..."></textarea>
+                        <textarea name="observacionesFisicas" rows="2" placeholder="Ej: Pantalla trizada..."></textarea>
                     </div>
 
                     <div class="grupo-input">
@@ -209,9 +209,8 @@
                                     TERMINADO / REPARADO</option>
                                 <option value="ENTREGADO" th:selected="${ordenEncontrada.estado.name() == 'ENTREGADO'}">
                                     ENTREGADO AL CLIENTE</option>
-                                <option value="NO_REPARABLE"
-                                    th:selected="${ordenEncontrada.estado.name() == 'ENTREGADO'}">
-                                    ENTREGADO AL CLIENTE</option>
+                                <option value="NO_REPARABLE" th:selected="${ordenEncontrada.estado.name() == 'NO_REPARABLE'}">
+                                    NO REPARABLE</option>
                             </select>
                         </div>
 

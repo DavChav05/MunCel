@@ -1,6 +1,5 @@
 package com.example.muncel.control;
 
-import com.example.muncel.model.CategoriaProducto;
 import com.example.muncel.model.Cliente;
 import com.example.muncel.model.ClienteUsuario;
 import com.example.muncel.model.Empleado;
@@ -166,6 +165,7 @@ public class ProductoController {
     // ==========================================
     // 3. PANEL PRINCIPAL DEL CLIENTE (DASHBOARD)
     // ==========================================
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     @GetMapping("/cliente/dashboard")
     public String mostrarDashboardCliente(jakarta.servlet.http.HttpSession session, Model model) {
 

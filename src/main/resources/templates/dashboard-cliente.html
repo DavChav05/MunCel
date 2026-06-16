@@ -45,25 +45,33 @@
                 <div th:each="orden : ${ordenes}" class="tarjeta-servicio-cliente">
                     <div class="tarjeta-servicio-header">
                         <span class="orden-id-badge"
-                            th:text="'Orden #' + (${orden.numeroOrden != null} ? ${orden.numeroOrden} : ${orden.idOrden})">Orden
+                            th:text="'Orden #' + (${orden.numeroOrden != null ? orden.numeroOrden : orden.idOrden})">Orden
                             #1000</span>
-                        <span th:text="${orden.estado != null} ? ${orden.estado} : 'INGRESADO'"
-                            th:classappend="${orden.estado != null && #strings.toString(orden.estado) == 'INGRESADO' ? 'badge-proceso' : 
-                                             orden.estado != null && #strings.toString(orden.estado) == 'REPARANDO' ? 'badge-proceso' : 
-                                             orden.estado != null && #strings.toString(orden.estado) == 'TERMINADO' ? 'badge-exito' : 'badge-entregado'}" class="badge">
-                            INGRESADO
-                        </span>
+
+                        <span th:if="${orden.estado != null && orden.estado.name() == 'INGRESADO'}"
+                            class="badge badge-recibido">Ingresado</span>
+                        <span th:if="${orden.estado != null && orden.estado.name() == 'DIAGNOSTICANDO'}"
+                            class="badge badge-reparacion">Diagnosticando</span>
+                        <span th:if="${orden.estado != null && orden.estado.name() == 'ESPERA_REPUESTO'}"
+                            class="badge badge-reparacion">Buscando Repuesto</span>
+                        <span th:if="${orden.estado != null && orden.estado.name() == 'TERMINADO'}"
+                            class="badge badge-terminado">Listo para Entrega</span>
+                        <span th:if="${orden.estado != null && orden.estado.name() == 'ENTREGADO'}"
+                            class="badge badge-entregado">Entregado</span>
+                        <span th:if="${orden.estado != null && orden.estado.name() == 'NO_REPARABLE'}"
+                            class="badge badge-entregado">No Reparable</span>
+                        <span th:if="${orden.estado == null}" class="badge badge-recibido">Ingresado</span>
                     </div>
 
                     <div class="tarjeta-servicio-body">
                         <h3
-                            th:text="${orden.dispositivo != null} ? (${orden.dispositivo.marca} + ' ' + ${orden.dispositivo.modelo}) : 'Dispositivo en Taller'">
+                            th:text="${orden.dispositivo != null ? (orden.dispositivo.marca + ' ' + orden.dispositivo.modelo) : 'Dispositivo en Taller'}">
                             Pocophone F1</h3>
 
                         <p class="falla-texto" style="margin-bottom: 12px;">
                             <strong>Falla Reportada:</strong>
                             <span
-                                th:text="${orden.fallaReportada != null} ? ${orden.fallaReportada} : 'No especificada'">No
+                                th:text="${orden.fallaReportada != null ? orden.fallaReportada : 'No especificada'}">No
                                 enciende</span>
                         </p>
 
@@ -73,14 +81,45 @@
                             <span th:text="${orden.observacionesFisicas}">Rayones leves</span>
                         </p>
 
+                        <details
+                            style="margin-top: 15px; background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 3px solid #dc2626; cursor: pointer;">
+                            <summary style="font-size: 0.9rem; font-weight: bold; color: #1e293b; user-select: none;">
+                                📋 Ver historial y avances de reparación
+                            </summary>
+
+                            <div
+                                style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e2e8f0; cursor: default;">
+                                <div th:if="${#lists.isEmpty(orden.historialesDiagnostico)}"
+                                    style="font-size: 0.85rem; color: #94a3b8; font-style: italic;">
+                                    Equipo en zona de diagnóstico técnico inicial.
+                                </div>
+
+                                <ul th:unless="${#lists.isEmpty(orden.historialesDiagnostico)}"
+                                    style="list-style: none; padding: 0; margin: 0; font-size: 0.85rem;">
+                                    <li th:each="historial : ${orden.historialesDiagnostico}"
+                                        style="margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #e2e8f0; color: #334155;">
+                                        <span style="color: #64748b; font-weight: bold;"
+                                            th:text="${historial.fechaHora != null ? #temporals.format(historial.fechaHora, 'dd/MM/yyyy HH:mm') + ' - ' : ''}">12/06
+                                            14:00 - </span>
+                                        <span th:text="${historial.accionRealizada}">Se desarmó el equipo.</span>
+
+                                        <span th:if="${historial.producto != null}"
+                                            style="display: block; font-size: 0.75rem; color: #dc2626; font-weight: 500; margin-top: 2px;">
+                                            ⚙️ Repuesto: <span th:text="${historial.producto.nombreProducto}">IC de
+                                                Carga</span>
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </details>
+
                         <div class="tarjeta-servicio-footer"
                             style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #e2e8f0;">
                             <span class="fecha-ingreso-txt"
-                                th:text="'Ingreso: ' + (${orden.fechaIngreso != null} ? ${#temporals.format(orden.fechaIngreso, 'dd/MM/yyyy')} : '---')">Ingreso:
+                                th:text="'Ingreso: ' + (${orden.fechaIngreso != null ? #temporals.format(orden.fechaIngreso, 'dd/MM/yyyy') : '---'})">Ingreso:
                                 12/06/2026</span>
-
                             <span class="presupuesto-txt"
-                                th:text="'$' + (${orden.presupuestoEstimado != null} ? ${orden.presupuestoEstimado} : '0.00')">$0.00</span>
+                                th:text="'$' + (${orden.presupuestoEstimado != null ? orden.presupuestoEstimado : '0.00'})">$0.00</span>
                         </div>
                     </div>
                 </div>
@@ -102,17 +141,34 @@
                         <tr>
                             <th>N° Factura</th>
                             <th>Fecha de Emisión</th>
+                            <th>Productos Comprados</th>
                             <th>Total Pagado</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="compra : ${compras}">
-                            <td th:text="${compra.numeroFactura}">001-001-000043</td>
+                            <td th:text="${compra.numeroFactura}" style="font-weight: bold; color: #475569;">
+                                001-001-000043</td>
                             <td
-                                th:text="${compra.fechaEmision != null} ? ${#temporals.format(compra.fechaEmision, 'dd/MM/yyyy HH:mm')} : '---'">
-                                08/06/2026 14:30
+                                th:text="${compra.fechaEmision != null ? #temporals.format(compra.fechaEmision, 'dd/MM/yyyy HH:mm') : '---'}">
+                                08/06/2026 14:30</td>
+
+                            <td>
+                                <ul th:if="${compra.detalles != null}"
+                                    style="margin: 0; padding-left: 15px; font-size: 0.85rem; color: #334155; list-style-type: disc;">
+                                    <li th:each="detalle : ${compra.detalles}">
+                                        <span
+                                            th:text="${detalle.producto != null ? detalle.producto.nombreProducto : 'Producto'}"
+                                            style="font-weight: 500;">Cargador</span>
+                                        (x<span th:text="${detalle.cantidad}">1</span>)
+                                        - <span th:text="'$' + ${detalle.subtotalLinea}"
+                                            style="color: #64748b;">$0.00</span>
+                                    </li>
+                                </ul>
                             </td>
-                            <td th:text="${'$' + compra.totalPagar}" class="txt-verde">$15.50</td>
+
+                            <td th:text="${'$' + compra.totalPagar}" class="txt-verde"
+                                style="font-weight: bold; font-size: 1.05rem;">$15.50</td>
                         </tr>
                     </tbody>
                 </table>

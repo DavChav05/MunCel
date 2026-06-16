@@ -24,7 +24,15 @@ public class OrdenServicioController {
 
     // Carga la página pública por primera vez (buscador vacío)
     @GetMapping
-    public String mostrarPaginaConsulta() {
+    public String mostrarPaginaConsulta(Model model) {
+        // Le pasamos las variables vacías para que el HTML no explote al intentar
+        // leerlas
+        model.addAttribute("numeroOrden", "");
+        model.addAttribute("servicio", null);
+        model.addAttribute("error", null);
+
+        // Retorna la vista (Asegúrate de que servicio-tecnico.html esté en la raíz de
+        // templates/)
         return "servicio-tecnico";
     }
 

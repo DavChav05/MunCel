@@ -32,8 +32,7 @@ public class NotaVenta {
     // RELACIÓN DE AUDITORÍA: Muchas notas de venta pueden ser cobradas por un mismo
     // Empleado
     @ManyToOne
-    @JoinColumn(name = "id_empleado_fk", referencedColumnName = "idEmpleado", nullable = false) // Llave foránea en
-                                                                                                // MySQL
+    @JoinColumn(name = "id_empleado_fk", referencedColumnName = "idEmpleado", nullable = false) // Llave foránea
     private Empleado empleado;
 
     @OneToMany(mappedBy = "notaVenta", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
