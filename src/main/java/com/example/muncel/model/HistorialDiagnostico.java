@@ -19,7 +19,7 @@ public class HistorialDiagnostico {
     private String accionRealizada;
 
     // Nuevo campo para registrar el costo de la mano de obra o reparación aplicada
-    @Column(name = "costos_reparacion", nullable = false, precision = 10, scale = 2)
+    @Column(name = "costos_reparacion", nullable = true, precision = 10, scale = 2)
     private BigDecimal costosReparacion = BigDecimal.ZERO;
 
     // RELACIÓN: Muchos historiales pertenecen a una misma Orden de Servicio

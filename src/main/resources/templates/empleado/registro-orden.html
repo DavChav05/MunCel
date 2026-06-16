@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Muncel System - Servicio Técnico</title>
+    <link rel="stylesheet" th:href="@{/empleado.css}">
+
+    <script>
+        // Lógica asíncrona para buscar clientes
+        async function verificarClienteST() {
+            const cedula = document.getElementById("inputCedulaST").value;
+            const msg = document.getElementById("msgClienteST");
+            if (!cedula) return;
+
+            try {
+                const response = await fetch(`/api/clientes/buscar?cedula=${cedula}`);
+                if (response.ok) {
+                    const cliente = await response.json();
+                    document.getElementById("inputNombreST").value = cliente.nombreCompleto;
+                    document.getElementById("inputTelefonoST").value = cliente.telefono;
+                    document.getElementById("inputDireccionST").value = cliente.direccion;
+                    msg.style.color = "#28a745";
+                    msg.innerText = "✓ Cliente encontrado en la base de datos.";
+                } else {
+                    msg.style.color = "#ffcc00";
+                    msg.innerText = "ℹ Cliente nuevo. Completa los datos para registrarlo.";
+                }
+            } catch (error) {
+                console.error("Error al buscar cliente:", error);
+            }
+        }
+
+        // Lógica para alternar las pestañas dinámicamente
+        function cambiarPestana(idPanel, botonPresionado) {
+            // Ocultar todos los paneles
+            document.querySelectorAll('.tab-contenido').forEach(panel => {
+                panel.classList.remove('activo');
+            });
+            // Quitar estado activo a todos los botones de pestañas
+            document.querySelectorAll('.tab-boton').forEach(btn => {
+                btn.classList.remove('activo');
+            });
+
+            // Activar el panel y el botón seleccionado
+            document.getElementById(idPanel).classList.add('activo');
+            botonPresionado.classList.add('activo');
+        }
+    </script>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-logo">MUNDO CELULAR</div>
+
+        <div class="nav-links">
+            <span style="color: var(--color-texto-gris); margin-right: 15px;">
+                👤 Hola, <span style="color: white; font-weight: bold;"
+                    th:text="${session.empleadoLogueado != null ? session.empleadoLogueado.nombreCompleto : 'Equipo'}"></span>
+            </span>
+
+            <a href="/empleado/ventas">Ventas</a>
+            <a href="/empleado/registro-orden">Servicio Técnico</a>
+            <a href="/logout">Cerrar Sesión</a>
+        </div>
+    </nav>
+
+    <div class="tabs-navegacion">
+        <button type="button" class="tab-boton"
+            th:classappend="${ordenEncontrada == null && param.buscarNumeroOrden == null && errorBusqueda == null} ? 'activo'"
+            onclick="cambiarPestana('panel-registrar', this)">
+            📋 Registrar Nueva Orden
+        </button>
+        <button type="button" class="tab-boton"
+            th:classappend="${ordenEncontrada != null || param.buscarNumeroOrden != null || errorBusqueda != null} ? 'activo'"
+            onclick="cambiarPestana('panel-buscar', this)">
+            🔍 Ver / Actualizar Historial
+        </button>
+    </div>
+
+    <div class="contenedor-pestana">
+        <div th:if="${mensajeExito}" class="alert alert-success" th:text="${mensajeExito}"></div>
+        <div th:if="${errorBusqueda}" class="alert alert-danger" th:text="${errorBusqueda}"></div>
+        <div th:if="${errorRepuesto}" class="alert alert-danger" th:text="${errorRepuesto}"></div>
+
+        <div id="panel-registrar" class="tab-contenido"
+            th:classappend="${ordenEncontrada == null && param.buscarNumeroOrden == null && errorBusqueda == null} ? 'activo'">
+            <div class="tarjeta-modulo">
+                <h2>📋 Ingresar Orden de Servicio</h2>
+                <form th:action="@{/empleado/ordenes/registrar}" method="POST" class="form-tecnico">
+
+                    <div class="grupo-input">
+                        <label>Número de Orden (Físico):</label>
+                        <input type="number" name="numeroOrden" th:value="${proximaOrden}" class="input-resaltado"
+                            required>
+                    </div>
+
+                    <div class="grupo-input">
+                        <label>Cédula / RUC del Cliente:</label>
+                        <div class="buscador-caja">
+                            <input type="text" id="inputCedulaST" name="cedula" placeholder="Ej: 1712345678" required>
+                            <button type="button" class="btn-buscar" onclick="verificarClienteST()">🔍 Buscar</button>
+                        </div>
+                        <small id="msgClienteST"></small>
+                    </div>
+
+                    <div class="grupo-input">
+                        <label>Nombre Completo del Cliente:</label>
+                        <input type="text" id="inputNombreST" name="nombreCliente" required>
+                    </div>
+
+                    <div class="fila-doble">
+                        <div class="grupo-input">
+                            <label>Teléfono:</label>
+                            <input type="text" id="inputTelefonoST" name="telefono">
+                        </div>
+                        <div class="grupo-input">
+                            <label>Dirección:</label>
+                            <input type="text" id="inputDireccionST" name="direccion">
+                        </div>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;">
+
+                    <div class="fila-doble">
+                        <div class="grupo-input">
+                            <label>Marca:</label>
+                            <input type="text" name="marca" placeholder="Ej: Xiaomi" required>
+                        </div>
+                        <div class="grupo-input">
+                            <label>Modelo:</label>
+                            <input type="text" name="modelo" placeholder="Ej: Pocophone F1" required>
+                        </div>
+                    </div>
+
+                    <div class="grupo-input">
+                        <label>IMEI o Número de Serie:</label>
+                        <input type="text" name="imei" placeholder="Ej: 864521025874123" required>
+                    </div>
+
+                    <div class="grupo-input">
+                        <label>Falla Reportada por el Cliente:</label>
+                        <textarea name="fallaReportada" rows="2" placeholder="Ej: No enciende..." required></textarea>
+                    </div>
+
+                    <div class="grupo-input">
+                        <label>Observaciones Físicas de Recepción:</label>
+                        <textarea name="observationsFisicas" rows="2" placeholder="Ej: Pantalla trizada..."></textarea>
+                    </div>
+
+                    <div class="grupo-input">
+                        <label>Presupuesto Inicial Estimado ($):</label>
+                        <input type="number" step="0.01" name="presupuestoEstimado" value="0.00">
+                    </div>
+
+                    <button type="submit">💾 Registrar e Ingresar Orden</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="panel-buscar" class="tab-contenido"
+            th:classappend="${ordenEncontrada != null || param.buscarNumeroOrden != null || errorBusqueda != null} ? 'activo'">
+            <div class="tarjeta-modulo linea-alerta">
+                <h2>🔍 Buscar y Actualizar Orden</h2>
+
+                <form th:action="@{/empleado/registro-orden}" method="GET" class="buscador-caja">
+                    <input type="number" name="buscarNumeroOrden" placeholder="N° de orden (Ej: 1001)"
+                        th:value="${param.buscarNumeroOrden}" required>
+                    <button type="submit" class="btn-buscar">🔍 Cargar</button>
+                </form>
+
+                <div th:if="${ordenEncontrada != null}">
+                    <div class="info-orden-caja">
+                        <p><strong>ORDEN N°:</strong> <span th:text="${ordenEncontrada.numeroOrden}"
+                                class="texto-rojo-bold"></span></p>
+                        <p><strong>CLIENTE:</strong> <span
+                                th:text="${ordenEncontrada.dispositivo.cliente.nombreCompleto}"></span></p>
+                        <p><strong>EQUIPO:</strong> <span
+                                th:text="${ordenEncontrada.dispositivo.marca + ' ' + ordenEncontrada.dispositivo.modelo}"></span>
+                            (<span th:text="${ordenEncontrada.dispositivo.imeiOSeríe}"></span>)</p>
+                        <p>
+                            <strong>ESTADO ACTUAL:</strong> <span class="badge badge-rojo"
+                                th:text="${ordenEncontrada.estado}"></span>
+                            <span style="margin: 0 10px; color: #444;">|</span>
+                            <strong>PRESUPUESTO ESTIMADO TOTAL:</strong> <span class="texto-rojo-bold"
+                                th:text="'$' + ${ordenEncontrada.presupuestoEstimado}">$0.00</span>
+                        </p>
+                    </div>
+
+                    <form th:action="@{/empleado/ordenes/actualizar-historial}" method="POST"
+                        class="form-tecnico subform-diagnostico">
+                        <input type="hidden" name="idOrden" th:value="${ordenEncontrada.idOrden}">
+
+                        <h4 class="titulo-amarillo">Añadir Avance en el Diagnóstico</h4>
+
+                        <div class="grupo-input">
+                            <label>Modificar Estado de la Orden:</label>
+                            <select name="nuevoEstado">
+                                <option value="INGRESADO" th:selected="${ordenEncontrada.estado.name() == 'INGRESADO'}">
+                                    INGRESADO</option>
+                                <option value="DIAGNOSTICANDO"
+                                    th:selected="${ordenEncontrada.estado.name() == 'DIAGNOSTICANDO'}">
+                                    DIAGNOSTICANDO</option>
+                                <option value="ESPERA_REPUESTO"
+                                    th:selected="${ordenEncontrada.estado.name() == 'ESPERA_REPUESTO'}">
+                                    ESPERA DE REPUESTO</option>
+                                <option value="TERMINADO" th:selected="${ordenEncontrada.estado.name() == 'TERMINADO'}">
+                                    TERMINADO / REPARADO</option>
+                                <option value="ENTREGADO" th:selected="${ordenEncontrada.estado.name() == 'ENTREGADO'}">
+                                    ENTREGADO AL CLIENTE</option>
+                                <option value="NO_REPARABLE"
+                                    th:selected="${ordenEncontrada.estado.name() == 'ENTREGADO'}">
+                                    ENTREGADO AL CLIENTE</option>
+                            </select>
+                        </div>
+
+                        <div class="grupo-input">
+                            <label>Acción / Diagnóstico Realizado:</label>
+                            <textarea name="accionRealizada" rows="3" placeholder="Ej: Se realizó cambio de IC..."
+                                required></textarea>
+                        </div>
+
+                        <div class="fila-doble">
+                            <div class="grupo-input">
+                                <label>Código del Repuesto Usado (Opcional):</label>
+                                <input type="text" name="codigoRepuesto" placeholder="Ej: REP-PMI8998">
+                            </div>
+                            <div class="grupo-input">
+                                <label>Costo Adicional ($):</label>
+                                <input type="number" step="0.01" name="costosReparacion" value="0.00">
+                            </div>
+                        </div>
+
+                        <div class="grupo-input">
+                            <label>Modificar Presupuesto / Costo Total del Servicio ($):</label>
+                            <input type="number" step="0.01" name="nuevoPresupuesto"
+                                th:value="${ordenEncontrada.presupuestoEstimado}" required>
+                        </div>
+
+                        <button type="submit" class="btn-amarillo">⚡ Registrar Diagnóstico</button>
+                    </form>
+
+                    <h4 style="margin-top: 25px; border-bottom: 1px solid #333; padding-bottom: 5px;">📜 Historial de
+                        Reparación</h4>
+                    <div th:if="${historial != null && !historial.isEmpty()}">
+                        <div class="linea-historial" th:each="h : ${historial}">
+                            <small th:text="${#temporals.format(h.fechaHora, 'dd/MM/yyyy HH:mm')}"></small>
+                            <p class="historial-accion" th:text="${h.accionRealizada}"></p>
+                            <div class="historial-detalles">
+                                <span>Costo Aplicado: $<span th:text="${h.costosReparacion}"></span></span>
+                                <span th:if="${h.producto != null}" class="repuesto-tag">
+                                    📦 Repuesto Adquirido: <span th:text="${h.producto.nombreProducto}"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${historial == null || historial.isEmpty()}">
+                        <p class="texto-vacio">No hay movimientos registrados en esta orden todavía.</p>
+                    </div>
+                </div>
+
+                <div th:if="${ordenEncontrada == null}" class="buscador-vacio">
+                    <p class="icono-grande">🔍</p>
+                    <p>Ingresa un número de orden válido para auditar el historial técnico del equipo o asignar
+                        repuestos.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Muncel System</p>
+    </footer>
+
+</body>
+
+</html>

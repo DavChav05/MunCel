@@ -18,14 +18,20 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.muncel.model.DetalleVenta;
+import com.example.muncel.model.Dispositivo;
 import com.example.muncel.model.Empleado;
+import com.example.muncel.model.HistorialDiagnostico;
 import com.example.muncel.model.NotaVenta;
+import com.example.muncel.model.OrdenServicio;
 import com.example.muncel.model.Producto;
 import com.example.muncel.repository.ClienteRepository;
 import com.example.muncel.repository.DetalleVentaRepository;
+import com.example.muncel.repository.DispositivoRepository;
 import com.example.muncel.repository.NotaVentaRepository;
+import com.example.muncel.repository.OrdenServicioRepository;
 import com.example.muncel.repository.ProductoRepository;
 import com.example.muncel.repository.EmpleadoRepository;
+import com.example.muncel.repository.HistorialDiagnosticoRepository;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -46,6 +52,15 @@ public class EmpleadoController {
 
     @Autowired
     private EmpleadoRepository empleadoRepositorio;
+
+    @Autowired
+    private DispositivoRepository dispositivoRepositorio;
+
+    @Autowired
+    private OrdenServicioRepository ordenServicioRepositorio;
+
+    @Autowired
+    private HistorialDiagnosticoRepository historialDiagnosticoRepositorio;
 
     private boolean esEmpleado(HttpSession session) {
         return session.getAttribute("empleadoLogueado") != null;
@@ -81,11 +96,139 @@ public class EmpleadoController {
         return "empleado/ventas";
     }
 
+    // 1. Cargar la vista principal de Órdenes (Permite ver el formulario y cargar
+    // una orden buscada)
     @GetMapping("/empleado/registro-orden")
-    public String registroOrden(HttpSession session) {
+    public String registroOrden(@RequestParam(required = false) Integer buscarNumeroOrden, HttpSession session,
+            Model model) {
         if (!esEmpleado(session))
             return "redirect:/login";
+
+        // Sugerir el próximo número de orden secuencial
+        OrdenServicio ultimaOrden = ordenServicioRepositorio.findTopByOrderByNumeroOrdenDesc();
+        int proximaOrden = (ultimaOrden != null && ultimaOrden.getNumeroOrden() != null)
+                ? ultimaOrden.getNumeroOrden() + 1
+                : 1001;
+        model.addAttribute("proximaOrden", proximaOrden);
+
+        // Si viene un número de orden por parámetro, lo buscamos con su historial
+        if (buscarNumeroOrden != null) {
+            OrdenServicio orden = ordenServicioRepositorio.findByNumeroOrden(buscarNumeroOrden).orElse(null);
+            if (orden != null) {
+                model.addAttribute("ordenEncontrada", orden);
+                List<HistorialDiagnostico> historial = historialDiagnosticoRepositorio
+                        .findByOrdenServicioIdOrdenOrderByFechaHoraDesc(orden.getIdOrden());
+                model.addAttribute("historial", historial);
+            } else {
+                model.addAttribute("errorBusqueda", "La orden N° " + buscarNumeroOrden + " no existe en el sistema.");
+            }
+        }
         return "empleado/registro-orden";
+    }
+
+    // 2. Acción: Registrar Nueva Orden (Cliente + Dispositivo + Orden)
+    @Transactional
+    @PostMapping("/empleado/ordenes/registrar")
+    public String registrarOrdenServicio(@RequestParam String cedula,
+            @RequestParam String nombreCliente,
+            @RequestParam(required = false) String telefono,
+            @RequestParam(required = false) String direccion,
+            @RequestParam String marca,
+            @RequestParam String modelo,
+            @RequestParam String imei,
+            @RequestParam Integer numeroOrden,
+            @RequestParam String fallaReportada,
+            @RequestParam(required = false) String observacionesFisicas,
+            @RequestParam BigDecimal presupuestoEstimado,
+            HttpSession session, RedirectAttributes redirectAttributes) {
+
+        Empleado empleadoLogueado = (Empleado) session.getAttribute("empleadoLogueado");
+        if (empleadoLogueado == null)
+            return "redirect:/login";
+
+        // A. Buscar o crear el Cliente
+        com.example.muncel.model.Cliente cliente = clienteRepositorio.findByCedulaRuc(cedula)
+                .orElseGet(() -> {
+                    com.example.muncel.model.Cliente c = new com.example.muncel.model.Cliente();
+                    c.setCedulaRuc(cedula);
+                    c.setNombreCompleto(nombreCliente);
+                    c.setTelefono(telefono != null ? telefono : "");
+                    c.setDireccion(direccion != null ? direccion : "");
+                    return clienteRepositorio.save(c);
+                });
+
+        // B. Buscar o crear el Dispositivo (basado en IMEI/Serie único)
+        Dispositivo dispositivo = dispositivoRepositorio.findByImeiOSeríe(imei)
+                .orElseGet(() -> {
+                    Dispositivo d = new Dispositivo();
+                    d.setMarca(marca);
+                    d.setModelo(modelo);
+                    d.setImeiOSeríe(imei);
+                    d.setCliente(cliente); // Enlazamos al cliente
+                    return dispositivoRepositorio.save(d);
+                });
+
+        // C. Registrar la Orden de Servicio
+        OrdenServicio orden = new OrdenServicio();
+        orden.setNumeroOrden(numeroOrden);
+        orden.setFallaReportada(fallaReportada);
+        orden.setObservacionesFisicas(observacionesFisicas);
+        orden.setPresupuestoEstimado(presupuestoEstimado != null ? presupuestoEstimado : BigDecimal.ZERO);
+        orden.setDispositivo(dispositivo);
+        orden.setEmpleado(empleadoLogueado);
+        orden.setFechaIngreso(LocalDateTime.now());
+
+        // El modelo ya inicializa el estado en INGRESADO por defecto
+        ordenServicioRepositorio.save(orden);
+
+        redirectAttributes.addFlashAttribute("mensajeExito", "¡Orden N° " + numeroOrden + " guardada con éxito!");
+        return "redirect:/empleado/registro-orden?buscarNumeroOrden=" + numeroOrden;
+    }
+
+    // 3. Acción: Actualizar Diagnóstico, Estado y Repuestos
+    @Transactional
+    @PostMapping("/empleado/ordenes/actualizar-historial")
+    public String actualizarHistorial(@RequestParam Integer idOrden,
+            @RequestParam String nuevoEstado,
+            @RequestParam String accionRealizada,
+            @RequestParam(required = false) BigDecimal costosReparacion, // Ya acepta nulos
+            @RequestParam(required = false) String codigoRepuesto,
+            @RequestParam BigDecimal nuevoPresupuesto, // <-- CAPTURAMOS EL NUEVO PRESUPUESTO
+            RedirectAttributes redirectAttributes) {
+
+        OrdenServicio orden = ordenServicioRepositorio.findById(idOrden).orElse(null);
+        if (orden == null)
+            return "redirect:/empleado/registro-orden?error=OrdenNoEncontrada";
+
+        // 1. Actualizamos el estado general Y el presupuesto estimado de la orden
+        orden.setEstado(com.example.muncel.model.EstadoOrden.valueOf(nuevoEstado));
+        orden.setPresupuestoEstimado(nuevoPresupuesto != null ? nuevoPresupuesto : BigDecimal.ZERO); // <-- GUARDADO
+        ordenServicioRepositorio.save(orden);
+
+        // 2. Creamos la línea de historial de forma segura
+        HistorialDiagnostico historial = new HistorialDiagnostico();
+        historial.setOrdenServicio(orden);
+        historial.setAccionRealizada(accionRealizada);
+        historial.setCostosReparacion(costosReparacion != null ? costosReparacion : BigDecimal.ZERO);
+        historial.setFechaHora(LocalDateTime.now());
+
+        if (codigoRepuesto != null && !codigoRepuesto.trim().isEmpty()) {
+            Producto repuesto = productoRepositorio.findByCodigoProducto(codigoRepuesto.trim()).orElse(null);
+            if (repuesto != null) {
+                historial.setProducto(repuesto);
+                int nuevoStock = repuesto.getStock() - 1;
+                repuesto.setStock(nuevoStock);
+                productoRepositorio.save(repuesto);
+            } else {
+                redirectAttributes.addFlashAttribute("errorRepuesto",
+                        "El código de repuesto no existe, pero se guardó el diagnóstico.");
+            }
+        }
+
+        historialDiagnosticoRepositorio.save(historial);
+        redirectAttributes.addFlashAttribute("mensajeExito", "Historial y presupuesto actualizados correctamente.");
+
+        return "redirect:/empleado/registro-orden?buscarNumeroOrden=" + orden.getNumeroOrden();
     }
 
     // --- ACCIÓN: VACIAR / LIMPIAR CARRITO ---

@@ -12,8 +12,6 @@ import java.util.List;
 
 public interface NotaVentaRepository extends JpaRepository <NotaVenta, Integer> {
 
-    List<NotaVenta> findByNumeroFactura(Integer numeroFactura);
-
     List<NotaVenta> findByCliente(Cliente cliente);
 
     NotaVenta findTopByOrderByNumeroFacturaDesc();

@@ -9,7 +9,9 @@
 
     @Repository
 
-    public interface HistorialDiagnosticoRepository extends JpaRepository<HistorialDiagnostico, Long>{
+    public interface HistorialDiagnosticoRepository extends JpaRepository<HistorialDiagnostico, Integer>{
 
         List<HistorialDiagnostico> findByAccionRealizada(String accionRealizada);
+
+        List<HistorialDiagnostico> findByOrdenServicioIdOrdenOrderByFechaHoraDesc(Integer idOrden);
     }

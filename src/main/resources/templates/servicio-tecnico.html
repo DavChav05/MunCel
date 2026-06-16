@@ -53,12 +53,16 @@
                     <label>Estado del Trabajo</label>
                     <span th:if="${servicio.estado != null && servicio.estado.name() == 'INGRESADO'}"
                         class="badge badge-recibido">Ingresado</span>
-                    <span th:if="${servicio.estado != null && servicio.estado.name() == 'REPARANDO'}"
-                        class="badge badge-reparacion">En Taller</span>
+                    <span th:if="${servicio.estado != null && servicio.estado.name() == 'DIAGNOSTICANDO'}"
+                        class="badge badge-reparacion">DIAGNOSTICANDO</span>
+                    <span th:if="${servicio.estado != null && servicio.estado.name() == 'ESPERA_REPUESTO'}"
+                        class="badge badge-reparacion">Buscando Repuesto</span>
                     <span th:if="${servicio.estado != null && servicio.estado.name() == 'TERMINADO'}"
                         class="badge badge-terminado">Listo para Entrega</span>
                     <span th:if="${servicio.estado != null && servicio.estado.name() == 'ENTREGADO'}"
                         class="badge badge-entregado">Entregado</span>
+                    <span th:if="${servicio.estado != null && servicio.estado.name() == 'NO_REPARABLE'}"
+                        class="badge badge-entregado">No Reparable</span>
                 </div>
 
                 <div class="info-item">

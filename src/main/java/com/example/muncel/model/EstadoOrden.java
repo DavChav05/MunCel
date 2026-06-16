@@ -3,7 +3,8 @@ package com.example.muncel.model;
 public enum EstadoOrden {
     INGRESADO,
     DIAGNOSTICANDO,
-    REPARADO,
+    ESPERA_REPUESTO,
+    TERMINADO,
     ENTREGADO,
     NO_REPARABLE
 }

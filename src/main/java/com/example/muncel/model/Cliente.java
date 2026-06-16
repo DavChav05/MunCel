@@ -18,8 +18,6 @@ public class Cliente {
     @Column(length = 15)
     private String telefono;
 
-    
-
     // ---> NUEVO CAMPO DIRECCIÓN <---
     @Column(length = 200)
     private String direccion;

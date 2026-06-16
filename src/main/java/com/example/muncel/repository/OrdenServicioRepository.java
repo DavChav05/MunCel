@@ -17,5 +17,6 @@ public interface OrdenServicioRepository extends JpaRepository<OrdenServicio, In
     // NUEVO: El método mágico para buscar por el número de orden visible
     Optional<OrdenServicio> findByNumeroOrden(Integer numeroOrden); 
     // (Usa Integer si tu número de orden es numérico)
+    OrdenServicio findTopByOrderByNumeroOrdenDesc();
 
 }
