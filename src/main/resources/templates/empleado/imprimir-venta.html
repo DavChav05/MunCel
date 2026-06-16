@@ -151,7 +151,7 @@
                         <td th:text="${detalle.cantidad}"></td>
                         <td class="col-descripcion">
                             <span th:text="${detalle.producto.nombreProducto}"></span><span
-                                th:text="${detalle.producto.subcategoria != null ? ' (' + detalle.producto.subcategoria + ')' : ''}"></span>
+                                th:text="${detalle.producto.detalleProducto != null ? ' ' + detalle.producto.detalleProducto + '' : ''}"></span>
                         </td>
                         <td class="derecha">$<span th:text="${detalle.precioUnitarioHistorico}"></span></td>
                         <td class="derecha">$<span th:text="${detalle.subtotalLinea}"></span></td>
