@@ -36,7 +36,7 @@ public class Producto {
 
     // --- NUEVO: TIPO ESPECÍFICO (Resuelve lo de los tipos de estuches) ---
     @Enumerated(EnumType.STRING)
-    @Column(name = "subcategoria", nullable = false, length = 50)
+    @Column(name = "subcategoria", nullable = false, length = 100)
     private SubcategoriaProducto subcategoria; // CARGADOR, AUDIFONOS, CASE_TRANSPARENTE, CASE_DISEÑO
 
     @Column(name = "detalle_producto", length = 100, nullable = true)

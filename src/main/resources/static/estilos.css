@@ -805,9 +805,9 @@ h1 {
 
 /* Asegura el reseteo de la caja de inputs para que no desborden */
 .grupo-campo input {
-    background-color: #222222;
+    background-color: white;
     border: 1px solid #444444;
-    color: #ffffff;
+    color: black;
     padding: 12px 15px;
     font-size: 15px;
     border-radius: 4px;
